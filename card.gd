@@ -10,14 +10,14 @@ func _ready() -> void:
 	$Front.texture = load("res://assets/cards/" + get_card_name())
 
 func _process(delta: float) -> void:
-	pass
+	if Input.is_action_just_pressed("ui_accept")
 
 
 func get_card_name() -> String:
 	var rank_str: String
 	match rank:
 		1: rank_str = "A"
-		11: rank_str = "10"
+		10: rank_str = "10"
 		11: rank_str = "J"
 		12: rank_str = "Q"
 		13: rank_str = "K"
