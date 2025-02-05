@@ -1,8 +1,7 @@
 extends Node2D
 class_name Card
 
-signal mouse_entered
-signal mouse_exited
+signal mouse_movement
 
 enum Suit { DIAMONDS, CLUBS, HEARTS, SPADES }
 const ALL_SUITS = [Suit.DIAMONDS, Suit.CLUBS, Suit.HEARTS, Suit.SPADES]
@@ -10,12 +9,9 @@ const ALL_SUITS = [Suit.DIAMONDS, Suit.CLUBS, Suit.HEARTS, Suit.SPADES]
 @export var suit: Suit = Suit.SPADES
 @export_range(1, 13) var rank: int = 1
 
-var is_flipping = false
 var flip_duration = 0.5
-var flip_position = -1.
 
 var scale_speed = 1
-var goal_scale = 1.
 
 var angle = 0.
 
@@ -23,23 +19,35 @@ func _ready() -> void:
 	load_texture()
 
 func load_texture():
-	$Front.texture = load("res://assets/cards/" + get_card_name())
+	$Sprites/Front.texture = load("res://assets/cards/" + get_card_name())
 
 
-func _process(delta: float) -> void:
-	if is_flipping:
-		if flip_position < 0 and flip_position + PI * delta / flip_duration >= 0:
-			var back_visible = $Back.visible
-			$Back.visible = $Front.visible
-			$Front.visible = back_visible
-		flip_position += PI * delta / flip_duration
-		$Front.scale.x = abs(sin(flip_position * PI / 2))
-		$Back.scale.x = abs(sin(flip_position * PI / 2))
-		if flip_position > 1:
-			is_flipping = false
-			$Front.scale.x = 1
-			$Back.scale.x = 1
-	scale = scale.move_toward(Vector2.ONE * goal_scale, scale_speed * delta)
+func _process(_delta: float) -> void:
+	if Input.is_action_just_pressed("ui_accept"):
+		flip_card()
+
+func tween_scale(goal_scale):
+	var tween = create_tween()
+	tween.tween_property(self, "scale", Vector2.ONE * goal_scale, 0.1).set_trans(Tween.TRANS_QUAD)
+
+func tween_position(goal_position, goal_rotation, duration):
+	var tween = create_tween()
+	tween.set_parallel()
+	tween.tween_property(self, "position", goal_position, duration).set_trans(Tween.TRANS_QUAD)
+	var rot_tween = create_tween()
+	rot_tween.tween_property(self, "rotation", goal_rotation, duration).set_trans(Tween.TRANS_QUAD)
+	
+
+func flip_card():
+	var flip_sprites = func():
+		var back_visible = $Sprites/Back.visible
+		$Sprites/Back.visible = $Sprites/Front.visible
+		$Sprites/Front.visible = back_visible
+	var tween = $Sprites.create_tween()
+	tween.tween_property(self, "scale", Vector2(0, 1), flip_duration / 2.).set_ease(Tween.EASE_IN)
+	tween.tween_property(self, "scale", Vector2(1, 1), flip_duration / 2.).set_ease(Tween.EASE_OUT)
+	get_tree().create_timer(flip_duration / 2.).timeout.connect(flip_sprites)
+
 
 func get_card_name() -> String:
 	var rank_str: String
@@ -58,10 +66,8 @@ func get_card_name() -> String:
 		Suit.SPADES: suit_str = "spades"
 		_: suit_str = "unknown"
 	return "card_%s_%s.png" % [suit_str, rank_str]
-
-func flip_card():
-	is_flipping = true
-	flip_position = -1.
+	
+	
 
 func set_random():
 	suit = ALL_SUITS[randi() % Suit.size()]  # Pick a random suit
@@ -71,10 +77,10 @@ func set_random():
 var is_hovered = false
 func _on_area_2d_mouse_entered() -> void:
 	is_hovered = true
-	mouse_entered.emit()
+	mouse_movement.emit()
 func _on_area_2d_mouse_exited() -> void:
 	is_hovered = false
-	mouse_exited.emit()
+	mouse_movement.emit()
 
 static var CARDS_VALUES = [-100, 11, -16, -15, -14, -13, -12, -3, -2, -1, 10, 2, 3, 4]
 static var TRUMP_VALUES = [-100, 11, -16, -15, -14, -13, -12, -3, -2, 14, 10, 20, 3, 4]

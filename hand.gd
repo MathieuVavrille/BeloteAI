@@ -13,83 +13,69 @@ var cards = []
 var cards_goal_angles = []
 var ANGLE_SPEED = PI / 2
 
-# Called when the node enters the scene tree for the first time.
-func _ready() -> void:
-	pass
+
+func _input(event):
+	if event is InputEventMouseButton and event.pressed:
+		for i in range(len(cards)-1, -1, -1):
+			if cards[i].is_hovered:
+				print(cards[i].suit, " ", cards[i].rank)
+				return
+
+
+func add_child_card(card):
+	var global_pos = card.global_position  # Save global position
+	var global_rot = card.global_rotation  # Save global rotation
+	
+	card.get_parent().remove_child(card)  # Remove from old parent
+	add_child(card)  # Add to new parent
+	card.mouse_movement.connect(on_card_mouse_movement)
+	card.global_position = global_pos  # Restore position
+	card.global_rotation = global_rot  # Restore rotation
+	add_card(card)
+
 
 func add_card(card):
 	cards.append(card)
 	cards.sort_custom(Card.generate_order(null))
-	compute_goal_angles()
+	position_cards()
+
+
 
 func create_card(suit, rank):
 	var card = CARD_SCENE.instantiate()
 	card.suit = suit
 	card.rank = rank
-	card.mouse_entered.connect(on_card_mouse_hovered)
-	card.mouse_exited.connect(on_card_mouse_hovered)
+	card.mouse_entered.connect(on_card_mouse_movement)
+	card.mouse_exited.connect(on_card_mouse_movement)
+	card.angle = PI/2
 	add_child(card)
 	add_card(card)
-	card.angle = PI/2
 	
 
 func position_cards():
 	for i in range(len(cards)):
-		var angle = cards[i].angle
-		cards[i].position = Vector2(cos(angle) * big_radius, -sin(angle) * small_radius)
-		var card_rotation = -small_radius**2 * cards[i].position.x / big_radius**2 / cards[i].position.y
-		cards[i].rotation = atan(card_rotation)
-		cards[i].z_index = i
+		var angle = PI/2 - angle_between_cards * (i - (len(cards)-1) / 2.)
+		var goal_position = Vector2(cos(angle) * big_radius, -sin(angle) * small_radius)
+		var card_rotation = -small_radius**2 * goal_position.x / big_radius**2 / goal_position.y
+		cards[i].tween_position(goal_position, atan(card_rotation), 0.5)
+		get_tree().create_timer(0.25).timeout.connect(func(): cards[i].z_index=i)
+		#cards[i].z_index = i
 
-func compute_goal_angles():
-	cards_goal_angles = []
-	for i in range(len(cards)):
-		cards_goal_angles.append(PI/2 - angle_between_cards * (i - (len(cards)-1) / 2.))
-
-func move_cards(delta):
-	for i in range(len(cards)):
-		cards[i].angle = move_toward(cards[i].angle, cards_goal_angles[i], delta * ANGLE_SPEED)
+#func compute_goal_angles():
+#	cards_goal_angles = []
+#	for i in range(len(cards)):
+#		cards_goal_angles.append()
 
 func swap_cards(i, j):
 	var cardi = cards[i]
 	cards[i] = cards[j]
 	cards[j] = cardi
 
-func _process(delta: float) -> void:
-	if Input.is_action_just_pressed("ui_accept"):
-		pass
-		#cards.sort_custom(Card.order)
-		#compute_goal_angles()
-	move_cards(delta)
-	position_cards()
-
-func on_card_mouse_hovered():
+func on_card_mouse_movement():
 	var can_hover = true
 	for i in range(len(cards)-1, -1, -1):
 		if cards[i].is_hovered and can_hover:
-			cards[i].goal_scale = 1.1
+			cards[i].tween_scale(1.1)
 			can_hover = false
 		else:
-			cards[i].goal_scale = 1.
-
-
-func _on_spades_pressed() -> void:
-	cards.sort_custom(Card.generate_order(Card.Suit.SPADES))
-	compute_goal_angles()
-func _on_hearts_pressed() -> void:
-	cards.sort_custom(Card.generate_order(Card.Suit.HEARTS))
-	compute_goal_angles()
-func _on_clubs_pressed() -> void:
-	cards.sort_custom(Card.generate_order(Card.Suit.CLUBS))
-	compute_goal_angles()
-func _on_diamonds_pressed() -> void:
-	cards.sort_custom(Card.generate_order(Card.Suit.DIAMONDS))
-	compute_goal_angles()
-
-
-func _on_new_card_pressed() -> void:
-	var card = CARD_SCENE.instantiate()
-	add_child(card)
-	card.set_random()
-	card.angle = PI/2
-	add_card(card)
+			cards[i].tween_scale(1.)

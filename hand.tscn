@@ -26,10 +26,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -63.0
-offset_top = 14.0
-offset_right = -3.0
-offset_bottom = 45.0
+offset_left = -43.0
+offset_top = -55.0
+offset_right = 17.0
+offset_bottom = -24.0
 grow_horizontal = 2
 grow_vertical = 2
 text = "Hearts"
@@ -40,10 +40,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = 36.0
-offset_top = 15.0
-offset_right = 88.0
-offset_bottom = 46.0
+offset_left = 13.0
+offset_top = -54.0
+offset_right = 65.0
+offset_bottom = -23.0
 grow_horizontal = 2
 grow_vertical = 2
 text = "Clubs"
@@ -62,8 +62,3 @@ grow_horizontal = 2
 grow_vertical = 2
 text = "Diamonds
 "
-
-[connection signal="pressed" from="Spades" to="." method="_on_spades_pressed"]
-[connection signal="pressed" from="Hearts" to="." method="_on_hearts_pressed"]
-[connection signal="pressed" from="Clubs" to="." method="_on_clubs_pressed"]
-[connection signal="pressed" from="Diamonds" to="." method="_on_diamonds_pressed"]

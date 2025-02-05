@@ -17,9 +17,3 @@ func _ready() -> void:
 	cards.shuffle()
 	for i in range(len(cards)):
 		cards[i].z_index = i
-
-
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
