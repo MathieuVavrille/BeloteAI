@@ -1,0 +1,88 @@
+[gd_scene load_steps=4 format=3 uid="uid://dkk38htl82o2u"]
+
+[ext_resource type="Script" path="res://deal_ui.gd" id="1_5pn1d"]
+[ext_resource type="PackedScene" uid="uid://df222ixkn7ded" path="res://hand.tscn" id="1_yt3dj"]
+[ext_resource type="PackedScene" uid="uid://ci45mgplbp82a" path="res://deck.tscn" id="2_kbnab"]
+
+[node name="DealUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_5pn1d")
+
+[node name="Bottom" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 1
+
+[node name="Hand" parent="Bottom" instance=ExtResource("1_yt3dj")]
+position = Vector2(0, 0)
+
+[node name="Left" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="Hand" parent="Left" instance=ExtResource("1_yt3dj")]
+position = Vector2(0, 0)
+rotation = 1.5708
+
+[node name="Right" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+grow_horizontal = 0
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="Hand" parent="Right" instance=ExtResource("1_yt3dj")]
+position = Vector2(0, 0)
+rotation = 4.71239
+
+[node name="Top" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+grow_horizontal = 2
+mouse_filter = 1
+
+[node name="Hand" parent="Top" instance=ExtResource("1_yt3dj")]
+position = Vector2(0, 0)
+rotation = 3.14159
+
+[node name="Deck" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Deck" parent="Deck" instance=ExtResource("2_kbnab")]
+
+[node name="NewCard" type="Button" parent="."]
+layout_mode = 0
+offset_right = 225.0
+offset_bottom = 127.0
+text = "New Card"
+
+[connection signal="pressed" from="NewCard" to="." method="_on_new_card_pressed"]

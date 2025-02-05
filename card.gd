@@ -5,6 +5,7 @@ signal mouse_entered
 signal mouse_exited
 
 enum Suit { DIAMONDS, CLUBS, HEARTS, SPADES }
+const ALL_SUITS = [Suit.DIAMONDS, Suit.CLUBS, Suit.HEARTS, Suit.SPADES]
 
 @export var suit: Suit = Suit.SPADES
 @export_range(1, 13) var rank: int = 1
@@ -63,7 +64,7 @@ func flip_card():
 	flip_position = -1.
 
 func set_random():
-	suit = Suit[Suit.keys()[randi() % Suit.size()]]  # Pick a random suit
+	suit = ALL_SUITS[randi() % Suit.size()]  # Pick a random suit
 	rank = randi() % 13 + 1  # Pick a rank from 1 (Ace) to 13 (King)
 	load_texture()
 
@@ -75,19 +76,14 @@ func _on_area_2d_mouse_exited() -> void:
 	is_hovered = false
 	mouse_exited.emit()
 
-static var CARDS_VALUES = [-100, 11, -12, -13, -14, -15, -16, -3, -2, -1, 10, 2, 3, 4]
-static var TRUMP_VALUES = [-100, 11, -12, -13, -14, -15, -16, -3, -2, 14, 10, 20, 3, 4]
-static func generate_order(trump, natural_order):
+static var CARDS_VALUES = [-100, 11, -16, -15, -14, -13, -12, -3, -2, -1, 10, 2, 3, 4]
+static var TRUMP_VALUES = [-100, 11, -16, -15, -14, -13, -12, -3, -2, 14, 10, 20, 3, 4]
+static func generate_order(trump):
 	var order = func(card1, card2):
 		if card1.suit != card2.suit:
-			return natural_order ^ (card1.suit < card2.suit)
-		if card1.suit == trump:
-			return natural_order ^ (TRUMP_VALUES[card1.suit] < TRUMP_VALUES[card2.suit])
+			return card1.suit < card2.suit
+		elif card1.suit == trump:
+			return TRUMP_VALUES[card1.rank] < TRUMP_VALUES[card2.rank]
 		else:
-			return natural_order ^ (CARDS_VALUES[card1.suit] < CARDS_VALUES[card2.suit])
+			return CARDS_VALUES[card1.rank] < CARDS_VALUES[card2.rank]
 	return order
-
-static func order_test(card1, card2):
-	if card1.suit != card2.suit:
-		return card1.suit < card2.suit
-	return card1.rank != 1 and card1.rank < card2.rank

@@ -1,12 +1,13 @@
 extends Node2D
 
-@export var small_radius = 250
-@export var big_radius = 400
+@export var small_radius = 100
+@export var big_radius = 200
 @export var natural_order = true
 
 const CARD_SCENE = preload("res://card.tscn")
 var min_angle = PI / 5
 var max_angle = PI - min_angle
+var angle_between_cards = PI / 12
 
 var cards = []
 var cards_goal_angles = []
@@ -14,16 +15,23 @@ var ANGLE_SPEED = PI / 2
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	for i in range(8):
-		var card = CARD_SCENE.instantiate()
-		card.set_random()
-		card.mouse_exited.connect(on_card_mouse_exited)
-		card.mouse_entered.connect(on_card_mouse_exited)
-		cards.append(card)
-		cards[i].angle = max_angle - i * (max_angle - min_angle) / 7
-		cards_goal_angles.append(cards[i].angle)
-		add_child(card)
-	position_cards()
+	pass
+
+func add_card(card):
+	cards.append(card)
+	cards.sort_custom(Card.generate_order(null))
+	compute_goal_angles()
+
+func create_card(suit, rank):
+	var card = CARD_SCENE.instantiate()
+	card.suit = suit
+	card.rank = rank
+	card.mouse_entered.connect(on_card_mouse_hovered)
+	card.mouse_exited.connect(on_card_mouse_hovered)
+	add_child(card)
+	add_card(card)
+	card.angle = PI/2
+	
 
 func position_cards():
 	for i in range(len(cards)):
@@ -34,8 +42,9 @@ func position_cards():
 		cards[i].z_index = i
 
 func compute_goal_angles():
+	cards_goal_angles = []
 	for i in range(len(cards)):
-		cards_goal_angles[i] = max_angle - i * (max_angle - min_angle) / (len(cards) - 1)
+		cards_goal_angles.append(PI/2 - angle_between_cards * (i - (len(cards)-1) / 2.))
 
 func move_cards(delta):
 	for i in range(len(cards)):
@@ -54,7 +63,7 @@ func _process(delta: float) -> void:
 	move_cards(delta)
 	position_cards()
 
-func on_card_mouse_exited():
+func on_card_mouse_hovered():
 	var can_hover = true
 	for i in range(len(cards)-1, -1, -1):
 		if cards[i].is_hovered and can_hover:
@@ -65,14 +74,22 @@ func on_card_mouse_exited():
 
 
 func _on_spades_pressed() -> void:
-	cards.sort_custom(Card.generate_order(Card.Suit.SPADES, natural_order))
+	cards.sort_custom(Card.generate_order(Card.Suit.SPADES))
 	compute_goal_angles()
 func _on_hearts_pressed() -> void:
-	cards.sort_custom(Card.generate_order(Card.Suit.HEARTS, natural_order))
+	cards.sort_custom(Card.generate_order(Card.Suit.HEARTS))
 	compute_goal_angles()
 func _on_clubs_pressed() -> void:
-	cards.sort_custom(Card.generate_order(Card.Suit.CLUBS, natural_order))
+	cards.sort_custom(Card.generate_order(Card.Suit.CLUBS))
 	compute_goal_angles()
 func _on_diamonds_pressed() -> void:
-	cards.sort_custom(Card.generate_order(Card.Suit.DIAMONDS, natural_order))
+	cards.sort_custom(Card.generate_order(Card.Suit.DIAMONDS))
 	compute_goal_angles()
+
+
+func _on_new_card_pressed() -> void:
+	var card = CARD_SCENE.instantiate()
+	add_child(card)
+	card.set_random()
+	card.angle = PI/2
+	add_card(card)

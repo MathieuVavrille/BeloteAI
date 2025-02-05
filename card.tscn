@@ -13,12 +13,15 @@ rank = 7
 
 [node name="Back" type="Sprite2D" parent="."]
 visible = false
+scale = Vector2(0.5, 0.5)
 texture = ExtResource("2_wokpp")
 
 [node name="Front" type="Sprite2D" parent="."]
+scale = Vector2(0.5, 0.5)
 texture = ExtResource("3_fk6bm")
 
 [node name="Area2D" type="Area2D" parent="."]
+scale = Vector2(0.5, 0.5)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
 shape = SubResource("RectangleShape2D_fbare")

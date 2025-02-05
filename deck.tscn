@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://ci45mgplbp82a"]
+
+[ext_resource type="Script" path="res://deck.gd" id="1_40k4k"]
+[ext_resource type="Texture2D" uid="uid://ben7qqx34vpkq" path="res://assets/cards/card_back.png" id="2_y5hfa"]
+
+[node name="Deck" type="Node2D"]
+script = ExtResource("1_40k4k")
+
+[node name="FakeCard" type="Sprite2D" parent="."]
+texture = ExtResource("2_y5hfa")
