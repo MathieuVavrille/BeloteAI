@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3 uid="uid://dswcmqe8koryp"]
+[gd_scene load_steps=6 format=3 uid="uid://dswcmqe8koryp"]
 
 [ext_resource type="Script" path="res://card.gd" id="1_r0jx5"]
 [ext_resource type="Texture2D" uid="uid://ben7qqx34vpkq" path="res://assets/cards/card_back.png" id="2_wokpp"]
 [ext_resource type="Texture2D" uid="uid://dp7k4aq6freb1" path="res://assets/cards/card_clubs_02.png" id="3_fk6bm"]
+[ext_resource type="Texture2D" uid="uid://crjmbcicyorp2" path="res://assets/card_placeholder.png" id="4_k80fm"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_fbare"]
 size = Vector2(136, 208)
@@ -21,6 +22,11 @@ texture = ExtResource("2_wokpp")
 [node name="Front" type="Sprite2D" parent="Sprites"]
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("3_fk6bm")
+
+[node name="Highlight" type="Sprite2D" parent="Sprites"]
+modulate = Color(1, 1, 0, 1)
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("4_k80fm")
 
 [node name="Area2D" type="Area2D" parent="Sprites"]
 scale = Vector2(0.5, 0.5)

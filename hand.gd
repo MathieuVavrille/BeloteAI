@@ -1,24 +1,25 @@
 extends Node2D
+class_name Hand
+
+signal play_card(card: Card)
 
 @export var small_radius = 100
 @export var big_radius = 200
 @export var natural_order = true
 
 const CARD_SCENE = preload("res://card.tscn")
-var min_angle = PI / 5
-var max_angle = PI - min_angle
+const CARD_MOVEMENT_DURATION = 0.1
 var angle_between_cards = PI / 12
 
 var cards = []
-var cards_goal_angles = []
-var ANGLE_SPEED = PI / 2
 
 
 func _input(event):
 	if event is InputEventMouseButton and event.pressed:
 		for i in range(len(cards)-1, -1, -1):
 			if cards[i].is_hovered:
-				print(cards[i].suit, " ", cards[i].rank)
+				play_card.emit(cards.pop_at(i))
+				position_cards()
 				return
 
 
@@ -57,14 +58,10 @@ func position_cards():
 		var angle = PI/2 - angle_between_cards * (i - (len(cards)-1) / 2.)
 		var goal_position = Vector2(cos(angle) * big_radius, -sin(angle) * small_radius)
 		var card_rotation = -small_radius**2 * goal_position.x / big_radius**2 / goal_position.y
-		cards[i].tween_position(goal_position, atan(card_rotation), 0.5)
+		cards[i].tween_position(goal_position, atan(card_rotation), CARD_MOVEMENT_DURATION)
 		get_tree().create_timer(0.25).timeout.connect(func(): cards[i].z_index=i)
 		#cards[i].z_index = i
 
-#func compute_goal_angles():
-#	cards_goal_angles = []
-#	for i in range(len(cards)):
-#		cards_goal_angles.append()
 
 func swap_cards(i, j):
 	var cardi = cards[i]

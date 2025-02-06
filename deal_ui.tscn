@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://dkk38htl82o2u"]
+[gd_scene load_steps=5 format=3 uid="uid://dkk38htl82o2u"]
 
 [ext_resource type="Script" path="res://deal_ui.gd" id="1_5pn1d"]
 [ext_resource type="PackedScene" uid="uid://df222ixkn7ded" path="res://hand.tscn" id="1_yt3dj"]
 [ext_resource type="PackedScene" uid="uid://ci45mgplbp82a" path="res://deck.tscn" id="2_kbnab"]
+[ext_resource type="PackedScene" uid="uid://cuvgfj56j24mb" path="res://trick.tscn" id="4_uqded"]
 
 [node name="DealUI" type="Control"]
 layout_mode = 3
@@ -79,10 +80,4 @@ grow_vertical = 2
 
 [node name="Deck" parent="Deck" instance=ExtResource("2_kbnab")]
 
-[node name="NewCard" type="Button" parent="."]
-layout_mode = 0
-offset_right = 225.0
-offset_bottom = 127.0
-text = "New Card"
-
-[connection signal="pressed" from="NewCard" to="." method="_on_new_card_pressed"]
+[node name="Trick" parent="Deck" instance=ExtResource("4_uqded")]

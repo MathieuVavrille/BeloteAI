@@ -10,10 +10,7 @@ const ALL_SUITS = [Suit.DIAMONDS, Suit.CLUBS, Suit.HEARTS, Suit.SPADES]
 @export_range(1, 13) var rank: int = 1
 
 var flip_duration = 0.5
-
-var scale_speed = 1
-
-var angle = 0.
+var highlighted = false
 
 func _ready() -> void:
 	load_texture()
@@ -25,6 +22,7 @@ func load_texture():
 func _process(_delta: float) -> void:
 	if Input.is_action_just_pressed("ui_accept"):
 		flip_card()
+	$Sprites/Highlight.visible = highlighted
 
 func tween_scale(goal_scale):
 	var tween = create_tween()
