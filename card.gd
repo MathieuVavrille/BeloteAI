@@ -9,10 +9,15 @@ const ALL_SUITS = [Suit.DIAMONDS, Suit.CLUBS, Suit.HEARTS, Suit.SPADES]
 @export var suit: Suit = Suit.SPADES
 @export_range(1, 13) var rank: int = 1
 
-var flip_duration = 0.5
-var highlighted = false
+const FLIP_DURATION = 0.5
+var highlighted = false:
+	set(value):
+		highlighted = value
+		$Sprites/Highlight.visible = highlighted
+
 
 func _ready() -> void:
+	highlighted = false
 	load_texture()
 
 func load_texture():
@@ -20,31 +25,38 @@ func load_texture():
 
 
 func _process(_delta: float) -> void:
-	if Input.is_action_just_pressed("ui_accept"):
-		flip_card()
-	$Sprites/Highlight.visible = highlighted
+	pass
 
 func tween_scale(goal_scale):
 	var tween = create_tween()
 	tween.tween_property(self, "scale", Vector2.ONE * goal_scale, 0.1).set_trans(Tween.TRANS_QUAD)
 
+func set_modulo_rotation(goal_rotation):
+	while rotation < goal_rotation:
+		rotation += 2 * PI
+	while rotation > goal_rotation:
+		rotation -= 2 * PI
+	if goal_rotation - rotation > rotation + 2 * PI - goal_rotation:
+		rotation += 2 * PI
+
 func tween_position(goal_position, goal_rotation, duration):
 	var tween = create_tween()
 	tween.set_parallel()
 	tween.tween_property(self, "position", goal_position, duration).set_trans(Tween.TRANS_QUAD)
+	set_modulo_rotation(goal_rotation)
 	var rot_tween = create_tween()
 	rot_tween.tween_property(self, "rotation", goal_rotation, duration).set_trans(Tween.TRANS_QUAD)
 	
 
-func flip_card():
+func flip():
 	var flip_sprites = func():
 		var back_visible = $Sprites/Back.visible
 		$Sprites/Back.visible = $Sprites/Front.visible
 		$Sprites/Front.visible = back_visible
 	var tween = $Sprites.create_tween()
-	tween.tween_property(self, "scale", Vector2(0, 1), flip_duration / 2.).set_ease(Tween.EASE_IN)
-	tween.tween_property(self, "scale", Vector2(1, 1), flip_duration / 2.).set_ease(Tween.EASE_OUT)
-	get_tree().create_timer(flip_duration / 2.).timeout.connect(flip_sprites)
+	tween.tween_property(self, "scale", Vector2(0, 1), FLIP_DURATION / 2.).set_ease(Tween.EASE_IN)
+	tween.tween_property(self, "scale", Vector2(1, 1), FLIP_DURATION / 2.).set_ease(Tween.EASE_OUT)
+	get_tree().create_timer(FLIP_DURATION / 2.).timeout.connect(flip_sprites)
 
 
 func get_card_name() -> String:
