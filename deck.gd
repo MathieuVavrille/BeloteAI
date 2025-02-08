@@ -17,3 +17,9 @@ func _ready() -> void:
 	cards.shuffle()
 	for i in range(len(cards)):
 		cards[i].z_index = i
+
+func add_card(card: Card):
+	ChildExchange.exchange(card, self)
+	cards.append(card)
+	card.tween_position(Vector2.ZERO, 0, Hand.CARD_MOVEMENT_DURATION )
+	get_tree().create_timer(Hand.CARD_MOVEMENT_DURATION / 2.).timeout.connect(func(): card.z_index=len(cards))

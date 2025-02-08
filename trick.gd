@@ -1,11 +1,17 @@
 extends Node2D
 
-signal trick_won(winner: int)
+signal trick_finished(last_trick: int)
 
 const RADIUS = 75
 const THROW_RANDOMNESS = 20
+const PLAY_RANDOM_TIMER = 0.25
+const CARD_RETRIEVAL_WAIT = 0.25
+const CARD_RETRIEVAL_TIME = 0.25
+const FLIP_TIMER = 0.25
+const CARD_TO_WINNER_WAIT = 0.25
 
 var start_direction = 0
+var current_direction = 0
 var cards = []
 var best_card_id = null
 var trump = Card.Suit.SPADES
@@ -13,14 +19,20 @@ var hands = []
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	rotation = start_direction * PI/2
 	trump = hands[0].trump
 	for hand in hands:
 		hand.play_card.connect(add_card)
-	var available_cards = []
-	for i in range(len(hands[start_direction].cards)):
-		available_cards.append(true)
-	hands[start_direction].activate_cards(available_cards)
+	start_trick()
+
+func start_trick():
+	best_card_id = null
+	cards = []
+	$Placeholder.visible = true
+	$Placeholder.rotation = start_direction * PI/2
+	$Placeholder.position = Vector2(cos($Placeholder.rotation + PI/2), sin($Placeholder.rotation + PI/2)) * RADIUS
+	hands[start_direction].activate_all_cards()
+	if start_direction != 10:
+		get_tree().create_timer(PLAY_RANDOM_TIMER).timeout.connect(hands[start_direction].play_random)
 
 
 func _process(_delta: float) -> void:
@@ -41,22 +53,42 @@ func add_card(card):
 	cards.back().z_index = len(cards) - 1
 	if len(cards) < 4:
 		move_placeholder()
-		var opponent_wins = len(cards) - 2 == best_card_id
-		hands[(len(cards) + start_direction)%4].activate_possible_cards(cards[0].suit, opponent_wins, null if cards[best_card_id].suit != trump else Card.TRUMP_VALUES[cards[best_card_id].rank])
+		var teammate_wins = len(cards) - 2 == best_card_id
+		if len(hands[(len(cards) + start_direction)%4].cards) != 1:
+			hands[(len(cards) + start_direction)%4].activate_possible_cards(cards[0].suit, not teammate_wins, null if cards[best_card_id].suit != trump else Card.TRUMP_VALUES[cards[best_card_id].rank])
+			if (len(cards) + start_direction)%4 != -1:
+				get_tree().create_timer(PLAY_RANDOM_TIMER).timeout.connect(hands[(len(cards) + start_direction)%4].play_random)
+		else:
+			hands[(len(cards) + start_direction)%4].activate_all_cards()
+			get_tree().create_timer(PLAY_RANDOM_TIMER).timeout.connect(hands[(len(cards) + start_direction)%4].play_random)
 	else:
 		$Placeholder.visible = false
 		cards[best_card_id].highlighted = true
 		cards[best_card_id].z_index = 4
-		get_tree().create_timer(1.).timeout.connect(bring_all_cards)
-		get_tree().create_timer(2.5).timeout.connect(flip)
-		get_tree().create_timer(2.5 + Card.FLIP_DURATION).timeout.connect(func(): trick_won.emit((start_direction + best_card_id) % 4))
+		get_tree().create_timer(CARD_RETRIEVAL_WAIT).timeout.connect(bring_all_cards)
+
 
 func bring_all_cards():
 	for card in cards:
-		card.tween_position(Vector2.ZERO, 0, 1.)
+		card.tween_position(Vector2.ZERO, 0, CARD_RETRIEVAL_TIME)
+	get_tree().create_timer(CARD_RETRIEVAL_TIME + FLIP_TIMER).timeout.connect(flip)
 func flip():
 	for card in cards:
 		card.flip()
+	get_tree().create_timer(Card.FLIP_DURATION + CARD_TO_WINNER_WAIT).timeout.connect(give_all_card_to_winner)
+func give_all_card_to_winner():
+	for i in range(len(cards)):
+		cards[i].z_index = len(cards)-i
+		cards[i].highlighted = false
+		get_tree().create_timer(Hand.CARD_MOVEMENT_DURATION * i).timeout.connect(
+			func(): hands[(start_direction + best_card_id) % 4].add_card_won(cards[i]))
+	get_tree().create_timer(Hand.CARD_MOVEMENT_DURATION * 4).timeout.connect(restart_trick)
+func restart_trick():
+	if len(hands[0].cards) == 0:
+		trick_finished.emit((start_direction + best_card_id) % 2 == 0)
+	else:
+		start_direction = (start_direction + best_card_id) % 4
+		start_trick()
 
 func set_modulo_rotation(goal_rotation):
 	while rotation < goal_rotation:

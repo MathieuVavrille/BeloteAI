@@ -19,7 +19,7 @@ func add_card(card):
 	current_card = card
 	[$Diamonds, $Clubs, $Hearts, $Spades][current_card.suit].disabled = true
 	[$Diamonds, $Clubs, $Hearts, $Spades][current_card.suit].modulate.a = 0.25
-	get_tree().create_timer(1).timeout.connect(func(): card_taken(current_card.suit))
+	get_tree().create_timer(0.25).timeout.connect(func(): card_taken(current_card.suit))
 	process_card()
 
 

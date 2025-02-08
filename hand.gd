@@ -12,23 +12,30 @@ const CARD_MOVEMENT_DURATION = 0.1
 var angle_between_cards = PI / 12
 
 var cards = []
+var cards_won = []
+var points_won = 0
 var trump = null:
 	set(new_trump):
 		trump = new_trump
 		cards.sort_custom(Card.generate_order(trump))
 		position_cards()
-		
+
+func send_play_card_signal(card):
+	card.highlighted = false
+	for j in range(len(cards)):
+		cards[j].highlighted = false
+	card.tween_scale(1)
+	play_card.emit(card)
+	position_cards()
+	
+
 
 func _input(event):
 	if event is InputEventMouseButton and event.pressed:
 		for i in range(len(cards)-1, -1, -1):
 			if cards[i].is_hovered and cards[i].highlighted:
-				for j in range(len(cards)):
-					cards[j].highlighted = false
 				var selected_card = cards.pop_at(i)
-				selected_card.tween_scale(1)
-				play_card.emit(selected_card)
-				position_cards()
+				send_play_card_signal(selected_card)
 				return
 
 
@@ -48,7 +55,7 @@ func position_cards():
 		var goal_position = Vector2(cos(angle) * big_radius, -sin(angle) * small_radius)
 		var card_rotation = -small_radius**2 * goal_position.x / big_radius**2 / goal_position.y
 		cards[i].tween_position(goal_position, atan(card_rotation), CARD_MOVEMENT_DURATION)
-		get_tree().create_timer(0.25).timeout.connect(func(): cards[i].z_index=i)
+		get_tree().create_timer(CARD_MOVEMENT_DURATION / 2.).timeout.connect(func(): cards[i].z_index=i)
 
 
 func swap_cards(i, j):
@@ -68,6 +75,15 @@ func on_card_mouse_movement():
 func add_trick(trick):
 	ChildExchange.exchange(trick, self)
 	trick.tween_position(Vector2(big_radius, -small_radius / 2.), 0, 1.)
+
+func add_card_won(card):
+	points_won += max(0, Card.TRUMP_VALUES[card.rank] if card.suit == trump else Card.CARDS_VALUES[card.rank])
+	ChildExchange.exchange(card, self)
+	cards_won.append(card)
+	card.tween_position(Vector2(big_radius, -small_radius / 2.), 0, CARD_MOVEMENT_DURATION)
+	var current_len = len(cards)
+	get_tree().create_timer(CARD_MOVEMENT_DURATION / 2.).timeout.connect(
+		func(): card.z_index = current_len - 40)
 
 func activate_possible_cards(selected_suit, opponent_wins, highest_trump):
 	var has_better_trump = false
@@ -89,22 +105,34 @@ func activate_possible_cards(selected_suit, opponent_wins, highest_trump):
 					if card.suit == trump and (highest_trump == null or Card.TRUMP_VALUES[card.rank] > highest_trump):
 						card.highlighted = true
 			else: # my teamate wins
-				for card in cards:
-					card.highlighted = true
+				activate_all_cards()
 	else:  # selected_suit == trump
 		if has_better_trump:  # has a better one
 			for card in cards:
-				if card.suit == trump and highest_trump == null or Card.TRUMP_VALUES[card.rank] > highest_trump:
+				if card.suit == trump and (highest_trump == null or Card.TRUMP_VALUES[card.rank] > highest_trump):
 					card.highlighted = true
 		elif has_selected_suit:  # has suit but less
 			for card in cards:
 				if card.suit == trump:
 					card.highlighted = true
 		else:  # Not the suit
-			for card in cards:
-				card.highlighted = true
+			activate_all_cards()
 
 
-func activate_cards(activation):
+func activate_all_cards():
+	for card in cards:
+		card.highlighted = true
+
+func play_random():
+	var nb_highlighted_cards = 0
+	for card in cards:
+		if card.highlighted:
+			nb_highlighted_cards += 1
+	var card_to_play = randi() % nb_highlighted_cards
 	for i in range(len(cards)):
-		cards[i].highlighted = activation[i]
+		if cards[i].highlighted:
+			if card_to_play == 0:
+				send_play_card_signal(cards.pop_at(i))
+				return
+			else:
+				card_to_play -= 1
