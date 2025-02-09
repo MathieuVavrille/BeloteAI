@@ -53,9 +53,9 @@ func add_card(card):
 	cards.back().z_index = len(cards) - 1
 	if len(cards) < 4:
 		move_placeholder()
-		var teammate_wins = len(cards) - 2 == best_card_id
+		var opponent_wins = len(cards) - 2 != best_card_id
 		if len(hands[(len(cards) + start_direction)%4].cards) != 1:
-			hands[(len(cards) + start_direction)%4].activate_possible_cards(cards[0].suit, not teammate_wins, null if cards[best_card_id].suit != trump else Card.TRUMP_VALUES[cards[best_card_id].rank])
+			hands[(len(cards) + start_direction)%4].activate_possible_cards(cards[0].suit, opponent_wins, null if cards[best_card_id].suit != trump else Card.TRUMP_VALUES[cards[best_card_id].rank])
 			if (len(cards) + start_direction)%4 != -1:
 				get_tree().create_timer(PLAY_RANDOM_TIMER).timeout.connect(hands[(len(cards) + start_direction)%4].play_random)
 		else:
