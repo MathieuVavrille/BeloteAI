@@ -68,8 +68,16 @@ array<Card, 32> createDeck() {
 }
 
 // Function to shuffle the deck
-void shuffleDeck(array<Card, 32>& deck) {
+void shuffle_deck(array<Card, 32>& deck) {
   for (int i = 31; i > 0; i--) {
+    int to_swap = random_zero_randint(i);
+    swap(deck[to_swap], deck[i]);
+  }
+}
+
+// Function to shuffle the deck
+void shuffle_vector_deck(vector<Card>& deck) {
+  for (int i = deck.size() - 1; i > 0; i--) {
     int to_swap = random_zero_randint(i);
     swap(deck[to_swap], deck[i]);
   }
@@ -77,32 +85,28 @@ void shuffleDeck(array<Card, 32>& deck) {
 
 // GameState struct
 struct GameState {
-  array<Card, 32> deck;
-  vector<Card> hands[4]; // Each player has a hand of cards
+  array<vector<Card>, 4> hands; // Each player has a hand of cards
   vector<Card> trick; // Current trick being played
   int current_player; // Index of the current player (0-3)
   int trump; // Trump suit for the game
   int team_points[2] = {0, 0}; // Points for each team
 
   // Initialize game state
-  GameState() {
-    deck = createDeck();
-    shuffleDeck(deck);
-    for (int i = 0; i < 32; ++i) {
-      hands[i % 4].push_back(deck[i]);
+  GameState(const array<vector<Card>, 4>& set_hands, int new_trump) {// Modified GameState constructor
+    for (int i = 0; i < 4; ++i) {
+      hands[i] = set_hands[i]; // Assign predefined hands
     }
-    current_player = 0; // Starting player
-    trump = deck[0].suit;
+    trump = new_trump; // Set the predefined trump suit
+    current_player = 0; // Set starting player
   }
   
   // Play a trick until all cards are played
-  void playGame() {
+  int play_random_game() {
     while (!hands[0].empty()) {
-      playTrick();
+      play_random_trick();
     }
     team_points[current_player % 2] += 10;
-    cout << team_points[0] << " vs " << team_points[1] << endl;
-    cout << "You " << ((team_points[0] > team_points[1]) ? "won": "lost") << "!" << endl;
+    return team_points[0] - team_points[1];
   }
 
   Card play_first_suit_greater(int player, int suit, int highest_trump) {
@@ -111,7 +115,7 @@ struct GameState {
 	return play_card(player, i);
     }
     cout << "Should not be possible" << endl;
-    displayHands();
+    display_hands();
     cout << player << " " << suit << " " << highest_trump << endl;
     std::terminate();
     return Card();
@@ -165,12 +169,12 @@ struct GameState {
   }
 
   // Play a single trick
-  void playTrick() {
+  void play_random_trick() {
     trick.clear();
-    displayHands();
-    cout << "New trick starts. Player " << current_player << " plays first." << endl;
+    //display_hands();
+    //cout << "New trick starts. Player " << current_player << " plays first." << endl;
     trick.push_back(play_random_card(current_player));
-    cout << "Player " << current_player << " plays " << trick[0].toString() << endl;
+    //cout << "Player " << current_player << " plays " << trick[0].toString() << endl;
     int best_card_id = 0;
     for (int i = 1; i < 4; ++i) {
       int player = (current_player + i) % 4;
@@ -179,7 +183,7 @@ struct GameState {
       trick.push_back(played_card);
       if (trick[best_card_id].lt(played_card, trump))
 	best_card_id = i;
-      cout << "Player " << player << " plays " << played_card.toString() << " it is " << ((best_card_id == i) ? "":"NOT") << " the best card" << endl;
+      //cout << "Player " << player << " plays " << played_card.toString() << " it is " << ((best_card_id == i) ? "":"NOT") << " the best card" << endl;
     }
 
     // Assign trick points to the winning team
@@ -189,13 +193,13 @@ struct GameState {
     }
     int winning_player = (current_player + best_card_id) % 4;
     team_points[winning_player % 2] += trickPoints;
-    cout << "Player " << winning_player << " wins the trick!" <<
-      " Team " << (winning_player % 2) << " gains " << trickPoints << " points!" << endl;
+    //cout << "Player " << winning_player << " wins the trick!" <<
+    //  " Team " << (winning_player % 2) << " gains " << trickPoints << " points!" << endl;
     current_player = winning_player;
   }
   
   // Display hands
-  void displayHands() const {
+  void display_hands() const {
     for (int i = 0; i < 4; ++i) {
       cout << "Player " << i << "'s hand:";
       for (const auto& card : hands[i]) {
@@ -206,12 +210,96 @@ struct GameState {
   }
 };
 
+GameState random_opponent_hands(vector<Card> hand, int trump) {
+  array<array<bool, 8>, 4> card_is_used = {false};
+  for(const Card& card: hand)
+    card_is_used[card.suit][card.rank] = true;
+  vector<Card> deck;
+  for(int suit = 0; suit < 4; suit++) {
+    for(int rank = 0; rank < 8; rank++) {
+      if (!card_is_used[suit][rank]) {
+	deck.push_back(Card{suit, rank});
+      }
+    }
+  }
+  shuffle_vector_deck(deck);
+  array<vector<Card>, 4> hands;
+  for(const Card& card: hand)
+    hands[0].push_back(card);
+  int hand_id = 1;
+  while (deck.size() != 0) {
+    hands[hand_id].push_back(deck.back());
+    deck.pop_back();
+    if (hands[hand_id].size() == 8) {
+      hand_id++;
+    }
+  }
+  return GameState(hands, trump);
+}
+
+int random_play_hand(vector<Card> hand) {
+  shuffle_vector_deck(hand);
+  GameState game = random_opponent_hands(hand, 0);
+  game.display_hands();
+  int res = game.play_random_game();
+  cout << res << endl;
+  return res;
+}
+
+struct GameInformation {
+  array<array<bool, 8>, 4> cards_remaining = {true}; // remaining_cards[suit][rank] -> true if not played
+  array<array<bool, 4>, 4> player_has_suit = {true}; // player_has_suit[player][suit] -> true if player might have suit
+  array<int, 4> remaining_cards_in_suit = {8, 8, 8, 8}; // Initially, 8 cards per suit
+
+  GameInformation() {
+    for (auto& suit : cards_remaining)
+        suit.fill(true);
+    for (auto& player : player_has_suit)
+        player.fill(true);
+  }
+
+  // Record a played card
+  void record_play(const Card& card) {
+    cards_remaining[card.suit][card.rank] = false;
+    remaining_cards_in_suit[card.suit]--;
+  }
+
+  // Print the game history
+  void print_information() const {
+    cout << "Remaining cards" << endl;
+    for (int s = 0; s < 4; ++s) {
+      cout << SUIT_NAMES[s] << ":";
+      for (int r = 0; r < 8; ++r) {
+	if (cards_remaining[s][r]) cout << " " << r;
+      }
+      cout << endl;
+    }
+
+    cout << "\nRemaining Cards in Each Suit:" << endl;
+    for (int s = 0; s < 4; ++s) {
+      cout << " " << remaining_cards_in_suit[s] << SUIT_NAMES[s];
+    }
+  }
+};
 
 // Main function to test
 int main() {
-  GameState game;
-  cout << "Trump suit: " << SUIT_NAMES[game.trump] << endl;
-  game.displayHands();
-  game.playGame();
+  vector<Card> hand;
+  hand.push_back(Card{0, 0});
+  hand.push_back(Card{0, 2});
+  hand.push_back(Card{0, 4});
+  hand.push_back(Card{0, 7});
+  hand.push_back(Card{1, 3});
+  hand.push_back(Card{1, 4});
+  hand.push_back(Card{2, 0});
+  hand.push_back(Card{3, 4});
+  GameInformation gi;
+  for (Card card: hand) gi.record_play(card);
+  gi.print_information();
+    /*int res = 0;
+  for(int i = 0; i < 100; i++) {
+    res += random_play_hand(hand);
+  }
+  cout << res / 100. << endl;*/
   return 0;
 }
