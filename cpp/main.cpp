@@ -4,6 +4,7 @@
 #include <string>
 #include <cstdint>
 #include <vector>
+#include <cmath>
 
 using namespace std;
 
@@ -36,7 +37,7 @@ using card_t = int;
 int csuit(const card_t card) { return card >> 3; }
 int crank(const card_t card) { return card & 0x7; }
 card_t get_card(const int suit, const int rank) { return suit << 3 | rank; }
-string card_to_string(const card_t card) { return RANK_NAMES[crank(card)] + SUIT_NAMES[csuit(card)]; }
+string card_to_string(const card_t card) { return "card";}//RANK_NAMES[crank(card)] + SUIT_NAMES[csuit(card)]; }
 int get_card_points(const card_t card, const int trump_suit) {
   return (csuit(card) == trump_suit) ? TRUMP_POINTS[crank(card)] : NORMAL_POINTS[crank(card)];
 }
@@ -45,6 +46,13 @@ bool card_lt(const card_t card1, const card_t card2, const int trump) {
     return csuit(card2) == trump && TRUMP_ORDER[crank(card1)] < TRUMP_ORDER[crank(card2)];
   else
     return csuit(card2) == trump || (csuit(card2) == csuit(card1) && NORMAL_ORDER[crank(card1)] < NORMAL_ORDER[crank(card2)]);
+}
+
+void cout_hand(vector<card_t> hand) {
+  for (card_t card: hand) {
+    cout << card_to_string(card) << " ";
+  }
+  cout << endl;
 }
 
 // Function to create a deck of 32 cards
@@ -75,13 +83,57 @@ void shuffle_vector_deck(vector<card_t>& deck) {
   }
 }
 
+vector<card_t> get_cards_greater(vector<card_t> cards, int suit, int highest_trump) {
+  vector<card_t> res;
+  for(const card_t card: cards) {
+    if (csuit(card) == suit and (highest_trump < TRUMP_ORDER[crank(card)]))
+      res.push_back(card);
+  }
+  return res;
+}
+vector<card_t> get_allowed_cards(vector<card_t> cards, int selected_suit, bool opponent_wins, int trump, int highest_trump) {
+  bool has_better_trump = false;
+  bool has_selected_suit = false;
+  // Find out if we have the selected suit
+  for (const card_t card: cards) {
+    if (csuit(card) == trump && highest_trump <= TRUMP_ORDER[crank(card)])
+      has_better_trump = true;
+    if (csuit(card) == selected_suit)
+      has_selected_suit = true;
+  }
+  if (selected_suit != trump) {
+    if (has_selected_suit) {
+      return get_cards_greater(cards, selected_suit, -10);
+    }
+    else { // I don't have the selected suit
+      // cout << "don't have suit " << opponent_wins << " " << has_better_trump << endl;
+      if (opponent_wins && has_better_trump)
+	return get_cards_greater(cards, trump, highest_trump);
+      else // my teamate wins
+	return cards;
+    }
+  }
+  else { // selected_suit == trump
+    if (has_better_trump) { // has a better one
+      return get_cards_greater(cards, trump, highest_trump);
+    }
+    else if (has_selected_suit) { // has trump but less
+      return get_cards_greater(cards, trump, -10);
+    }
+    else { // Not the suit
+      return cards;
+    }
+  }
+}
+
 // GameState struct
 struct GameState {
   array<vector<card_t>, 4> hands; // Each player has a hand of cards
   vector<card_t> trick; // Current trick being played
-  int current_player; // Index of the current player (0-3)
+  int start_player; // Index of the current player (0-3)
   int trump; // Trump suit for the game
   int team_points[2] = {0, 0}; // Points for each team
+  int best_card_id = 0;
 
   // Initialize game state
   GameState(const array<vector<card_t>, 4>& set_hands, int new_trump) {// Modified GameState constructor
@@ -89,15 +141,17 @@ struct GameState {
       hands[i] = set_hands[i]; // Assign predefined hands
     }
     trump = new_trump; // Set the predefined trump suit
-    current_player = 0; // Set starting player
+    start_player = 0; // Set starting player
   }
   
   // Play a trick until all cards are played
   int play_random_game() {
-    while (!hands[0].empty()) {
-      play_random_trick();
+    vector<card_t> possible_hand = get_playable_cards(); // TODO optimize
+    card_t random_card = possible_hand[random_zero_randint(possible_hand.size())];
+    while (!play_card(random_card)) {
+      possible_hand = get_playable_cards();
+      random_card = possible_hand[random_zero_randint(possible_hand.size())];
     }
-    team_points[current_player % 2] += 10;
     return team_points[0] - team_points[1];
   }
 
@@ -160,32 +214,69 @@ struct GameState {
     return played_card;
   }
 
-  // Play a single trick
   void play_random_trick() {
     trick.clear();
-    //display_hands();
-    //cout << "New trick starts. Player " << current_player << " plays first." << endl;
-    trick.push_back(play_random_card(current_player));
-    //cout << "Player " << current_player << " plays " << trick[0].toString() << endl;
+    trick.push_back(play_random_card(start_player));
     int best_card_id = 0;
     for (int i = 1; i < 4; ++i) {
-      int player = (current_player + i) % 4;
+      int player = (start_player + i) % 4;
       card_t played_card = play_random_allowed_card(player, csuit(trick[0]), trick.size() - 2 != best_card_id,
 						    (csuit(trick[best_card_id]) == trump) ? TRUMP_ORDER[crank(trick[best_card_id])] : -10);
       trick.push_back(played_card);
       if (card_lt(trick[best_card_id], played_card, trump))
 	best_card_id = i;
-      //cout << "Player " << player << " plays " << played_card.toString() << " it is " << ((best_card_id == i) ? "":"NOT") << " the best card" << endl;
     }
     int trickPoints = 0;
     for (const card_t card : trick) {
       trickPoints += get_card_points(card, trump);
     }
-    int winning_player = (current_player + best_card_id) % 4;
+    int winning_player = (start_player + best_card_id) % 4;
     team_points[winning_player % 2] += trickPoints;
-    //cout << "Player " << winning_player << " wins the trick!" <<
-    //  " Team " << (winning_player % 2) << " gains " << trickPoints << " points!" << endl;
-    current_player = winning_player;
+    start_player = winning_player;
+  }
+
+  vector<card_t> get_playable_cards() {
+    if (trick.size() == 0) {
+      return hands[start_player];
+    }
+    else {
+      int current_player = (start_player + trick.size()) % 4;
+      return get_allowed_cards(hands[current_player], csuit(trick[0]), trick.size() - 2 != best_card_id, trump, 
+			       (csuit(trick[best_card_id]) == trump) ? TRUMP_ORDER[crank(trick[best_card_id])] : -10);
+    }
+  }
+  void remove_card(int player, card_t card) {
+    for(int i = 0; i < hands[player].size(); i++) {
+      if (hands[player][i] == card) {
+	play_card(player, i);
+	return;
+      }
+    }
+  }
+  bool play_card(card_t card) { // returns true if it was the last card
+    remove_card((start_player + trick.size()) % 4, card);
+    trick.push_back(card);
+    if (card_lt(trick[best_card_id], card, trump))
+      best_card_id = trick.size() - 1;
+    if (trick.size() == 4) {
+      cout << "trick_finished" << endl;
+      cout_hand(trick);
+      int trickPoints = 0;
+      for (const card_t card : trick) {
+	trickPoints += get_card_points(card, trump);
+      }
+      int winning_player = (start_player + best_card_id) % 4;
+      team_points[winning_player % 2] += trickPoints;
+      start_player = winning_player;
+      if (hands[0].size() == 0) {
+	team_points[start_player % 2] += 10;
+	return true;
+      }
+      trick.clear();
+      display_hands();
+      cout << "Player " << start_player << " to play" << endl;
+    }
+    return false;
   }
   
   // Display hands
@@ -273,10 +364,11 @@ struct GameInformation {
       }
       cout << endl;
     }
-    cout << "\nRemaining card_ts in Each Suit:" << endl;
+    cout << "Remaining cards in Each Suit:" << endl;
     for (int s = 0; s < 4; ++s) {
       cout << " " << remaining_cards_in_suit[s] << SUIT_NAMES[s];
     }
+    cout << endl;
   }
 };
 
@@ -292,14 +384,17 @@ int main() {
   hand.push_back(get_card(1, 4));
   hand.push_back(get_card(2, 0));
   hand.push_back(get_card(3, 4));
+  cout_hand(hand);
   GameInformation gi;
   for (card_t card: hand) gi.record_play(card);
   gi.print_information();
-  /*int res = 0;
-    for(int i = 0; i < 100; i++) {
-    res += random_play_hand(hand);
-    }
-    cout << res / 100. << endl;*/
+  GameState gs = random_opponent_hands(hand, 0);
+  cout << "TRUMP: " << SUIT_NAMES[gs.trump] << endl;
+  vector<card_t> possible_hand = gs.get_playable_cards();
+  while (!gs.play_card(possible_hand[0])) {
+    possible_hand = gs.get_playable_cards();
+  }
+  cout << gs.team_points[0] << " " << gs.team_points[1] << endl;
   return 0;
 }
 
@@ -312,14 +407,14 @@ struct Node {
   float nb_tests = 0.0;
   array<node_t, 32> card_played;
   Node() {}
-  void init(int new_move) {
+  void init() {
     nb_wins = 0.0;
     nb_tests = 0.0;
     card_played.fill(-1);
   }
   inline float average() {return nb_wins/nb_tests;}
   inline float upper_bound(float total_nb_tests) {return nb_wins/nb_tests + sqrt(2*log(1+total_nb_tests)/nb_tests);}
-  node_t best_node_to_play() {
+  /*node_t best_node_to_play() {
     node_t best_node = start_node;
     float best_score = get_node(start_node).average();
     for (int i = start_node+1; i < start_node+nb_moves; i++) {
@@ -329,88 +424,99 @@ struct Node {
 	best_score = score;
       }
     }
-    return best_node;}
-  node_t get_node_to_play() {
-    node_t best_node = start_node;
-    float best_score = -10.f;
-    for (int i = start_node; i < start_node + nb_moves; i++) {
-      float score = get_node(i).upper_bound(nb_tests);
-      if (isnan(score))
-	return i;
+    return best_node;}*/
+  node_t get_node_to_play(vector<card_t> cards) {
+    node_t best_card = -1;
+    float best_score = -1000.f;
+    for (card_t card: cards) {
+      if (card_played[card] == -1) { // This card has never been played
+	card_played[card] = current_node_alloc_id++;
+	get_node(card_played[card]).init();
+	return card;
+      }
+      float score = get_node(card_played[card]).upper_bound(nb_tests);
       if (score > best_score) {
-	best_node = i;
+	best_card = card;
 	best_score = score;
       }
     }
-    return best_node;}
-  float rollout(State& state) {
-    if (state.play(move)) {
-      nb_wins = 1.0f / 0.0f;
+    return best_card;
+  }
+  float rollout(GameState& state) {
+    int res = state.play_random_game();
+    nb_wins += res;
+    nb_tests++;
+    return res;
+  }
+  float mcts(GameState& state) {
+    vector<card_t> possible_cards = state.get_playable_cards(); // Optimize to automatically play the last trick
+    card_t card_to_play = get_node_to_play(possible_cards);
+    node_t next_node_id = card_played[card_to_play];
+    bool is_finished = state.play_card(card_to_play);
+    int res;
+    if (is_finished) {
       nb_tests++;
-      return nb_wins;
-    }
-    else {
-      float res = -state.rollout();
+      res = state.team_points[0] - state.team_points[1];
       nb_wins += res;
-      nb_tests++;
       return res;
-    }}
-  float play(State& state) {
-    if (state.play(move)) {
-      nb_wins = 1.f/0.f;
+    }
+    else if (get_node(next_node_id).nb_tests == 0) { // New node
       nb_tests++;
-      return nb_wins;
+      res = get_node(next_node_id).rollout(state);
+      nb_wins += res;
+      return res;
     }
     else {
-      return mcts(state);
-    }}
-  float mcts(State& state) {
-    float res;
-    if (nb_moves == -1) {
+      nb_tests++;
+      res = get_node(next_node_id).mcts(state);
+      nb_wins += res;
+      return res;
+    }
+    /*if (nb_moves == -1) {
       start_node = current_node_alloc_id;
       state.set_possible_moves();
       nb_moves = MOVES_SIZE;
       if (nb_moves == 0) {
-	int draw_winner = state.draw_winner();
-	if (draw_winner != 0)
-	  nb_wins = -draw_winner/0.f;
-	else
-	  nb_wins = 0.f;
-	nb_tests++;
-	return max(-1.f,nb_wins);
+      int draw_winner = state.draw_winner();
+      if (draw_winner != 0)
+      nb_wins = -draw_winner/0.f;
+      else
+      nb_wins = 0.f;
+      nb_tests++;
+      return max(-1.f,nb_wins);
       }
       else {
-	for (int i = 0; i < nb_moves; i++)
-	  get_node(current_node_alloc_id++).init(MOVES.at(i));
-	res = -get_node(start_node+random_randint(0,nb_moves-1)).rollout(state);
-	nb_wins += res;
-	nb_tests++;
-	return max(-1.f,res);
+      for (int i = 0; i < nb_moves; i++)
+      get_node(current_node_alloc_id++).init(MOVES.at(i));
+      res = -get_node(start_node+random_randint(0,nb_moves-1)).rollout(state);
+      nb_wins += res;
+      nb_tests++;
+      return max(-1.f,res);
       }
-    }
-    else if (nb_moves == 0) {
+      }
+      else if (nb_moves == 0) {
       return nb_wins;
-    }
-    else {
-      Node& node_to_play = get_node(get_node_to_play());
-      if (node_to_play.nb_wins == -1.f/0.f) {
-	nb_wins = 1.f/0.f;
-	nb_tests++;
-	return nb_wins;
       }
       else {
-	res = -node_to_play.play(state);
-	nb_wins += res;
-	nb_tests++;
-	return max(-1.f,res);
+      Node& node_to_play = get_node(get_node_to_play(state));
+      if (node_to_play.nb_wins == -1.f/0.f) {
+      nb_wins = 1.f/0.f;
+      nb_tests++;
+      return nb_wins;
       }
-    }}
-  void print_scores() {
+      else {
+      res = -node_to_play.play(state);
+      nb_wins += res;
+      nb_tests++;
+      return max(-1.f,res);
+      }}*/
+  }
+  /*void print_scores() {
     for (int i = start_node; i < start_node + nb_moves; i++) {
       print_to_cerr_big_move(get_node(i).move); cerr << " " << get_node(i).average() << " " << get_node(i).nb_tests << endl;
       for (int j = get_node(i).start_node; j < get_node(i).start_node+get_node(i).nb_moves; j++) {
 	cerr << "    "; print_to_cerr_big_move(get_node(j).move); cerr << " " << get_node(j).average() << " " << get_node(j).nb_tests << endl;
-      }}}
+	}}}*/
 };
 array<Node,ALLOC_SIZE> all_nodes;
 Node& get_node(int id) {
