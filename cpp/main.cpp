@@ -11,7 +11,7 @@ using namespace std;
 #define ALLOC_SIZE 300000
 
 const array<string, 4> SUIT_NAMES = {"♥", "♦", "♣", "♠"};
-const array<string, 8> RANK_NAMES = {"7", "8", "9", "10", "J", "Q", "K", "A"};
+const array<string, 8> RANK_NAMES = {" 7", " 8", " 9", "10", " J", " Q", " K", " A"};
 const array<int, 8> NORMAL_POINTS = {0, 0, 0, 10, 2, 3, 4, 11}; // 7, 8, 9, 10, J, Q, K, A
 const array<int, 8> NORMAL_ORDER = {-1, 0, 1, 10, 2, 3, 4, 11}; // total order on the rank
 const array<int, 8> TRUMP_POINTS = {0, 0, 14, 10, 20, 3, 4, 11}; // Jack is stronger in trump
@@ -380,9 +380,10 @@ struct Node {
     card_played.fill(-1);
   }
   inline float average() {return nb_wins/nb_tests;}
-  inline float upper_bound(float total_nb_tests) {return nb_wins/nb_tests + sqrt(2*log(1+total_nb_tests)/nb_tests);}
-  node_t get_node_to_play(vector<card_t> cards) {
+  inline float upper_bound(float total_nb_tests, float factor) {return factor * nb_wins / nb_tests + 40 * sqrt(2*log(1+total_nb_tests)/nb_tests);}
+  node_t get_node_to_play(vector<card_t> cards, bool is_opponent) {
     node_t best_card = -1;
+    float factor = (is_opponent) ? -1.f : 1.f;
     float best_score = -1000.f;
     for (card_t card: cards) {
       if (card_played[card] == -1) { // This card has never been played
@@ -390,10 +391,24 @@ struct Node {
 	get_node(card_played[card]).init();
 	return card;
       }
-      float score = get_node(card_played[card]).upper_bound(nb_tests);
+      float score = get_node(card_played[card]).upper_bound(nb_tests, factor);
       if (score > best_score) {
 	best_card = card;
 	best_score = score;
+      }
+    }
+    return best_card;
+  }
+  node_t best_node_to_play() {
+    node_t best_card = -1;
+    float best_score = -1000.f;
+    for (int card = 0; card < 32; card++) {
+      if (card_played[card] != -1) {
+	float score = get_node(card_played[card]).average();
+	if (score > best_score) {
+	  best_card = card;
+	  best_score = score;
+	}
       }
     }
     return best_card;
@@ -406,17 +421,10 @@ struct Node {
   }
   float mcts(GameState& state) {
     vector<card_t> possible_cards = state.get_playable_cards(); // Optimize to automatically play the last trick
-    card_t card_to_play = get_node_to_play(possible_cards);
+    card_t card_to_play = get_node_to_play(possible_cards, (state.start_player + state.trick.size()) % 2 == 1);
     node_t next_node_id = card_played[card_to_play];
     bool is_finished = state.play_card(card_to_play);
-    cout << "Card played " << card_to_string(card_to_play) << endl;
     int res;
-    /*for (card_t card: possible_cards) {
-      cout << card << endl;
-    }
-    cout << card_to_string(card_to_play) << " " << card_to_play << endl;
-    state.display_hands();
-    return 0.0;*/
     if (is_finished) {
       nb_tests++;
       res = state.team_points[0] - state.team_points[1];
@@ -426,7 +434,6 @@ struct Node {
     else if (get_node(next_node_id).nb_tests == 0) { // New node
       nb_tests++;
       res = get_node(next_node_id).rollout(state);
-      cout << "rollout finished" << endl;
       nb_wins += res;
       return res;
     }
@@ -437,25 +444,14 @@ struct Node {
       return res;
     }
   }
-  /*node_t best_node_to_play() {
-    node_t best_node = start_node;
-    float best_score = get_node(start_node).average();
-    for (int i = start_node+1; i < start_node+nb_moves; i++) {
-      float score = get_node(i).average();
-      if (score > best_score) {
-	best_node = i;
-	best_score = score;
-      }
-    }
-    return best_node;}*/
-  void print_scores() {
+  void print_scores(string indent) {
     for (int i = 0; i < 32; i++) {
       if (card_played[i] != -1) {
 	Node& next_node = get_node(card_played[i]);
-	cout << card_to_string(i) << ": " << next_node.average() << " " << get_node(i).nb_tests << endl;
-	/*for (int j = 0; j < 32; j++) {
-	  cerr << "    "; print_to_cerr_big_move(get_node(j).move); cerr << " " << get_node(j).average() << " " << get_node(j).nb_tests << endl;
-	  }*/
+	cout << indent << card_to_string(i) << ":  " << (int) next_node.average() << "  " << next_node.nb_tests << endl;
+	if (next_node.nb_tests > 1000) {
+	  next_node.print_scores(indent + " | ");
+	}
       }
     }
   }
@@ -484,13 +480,10 @@ int main() {
   for (card_t card: hand) gi.record_play(card);
   Node& node = get_node(current_node_alloc_id++);
   node.init();
-  for(int i = 0; i < 2; i++) {
+  for(int i = 0; i < 20000; i++) {
     GameState gs = random_opponent_hands(hand, 0);
-    gs.display_hands();
     node.mcts(gs);
-    node.print_scores();
   }
-  //cout << gs.play_random_game() << endl;
-  //cout << gs.team_points[0] << " " << gs.team_points[1] << endl;
+  node.print_scores("");
   return 0;
 }
