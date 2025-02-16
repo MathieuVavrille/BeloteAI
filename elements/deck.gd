@@ -1,6 +1,6 @@
 extends Node2D
 
-const CARD_SCENE = preload("res://card.tscn")
+const CARD_SCENE = preload("res://elements/card.tscn")
 
 var cards = []
 

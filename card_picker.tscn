@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://jnpwcm0tmiru"]
+
+[ext_resource type="Script" path="res://card_picker.gd" id="1_jnqj6"]
+
+[node name="CardPicker" type="Node2D"]
+script = ExtResource("1_jnqj6")

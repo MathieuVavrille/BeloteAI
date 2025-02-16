@@ -1,5 +1,5 @@
 extends Control
-const CARD_SCENE = preload("res://card.tscn")
+const CARD_SCENE = preload("res://elements/card.tscn")
 
 var current_trick = null
 var hand_to_deal = 0
@@ -25,7 +25,7 @@ func _on_start_pressed() -> void:
 
 var trump_picker = null
 func start_trump_picker():
-	trump_picker = load("res://trump_picker.tscn").instantiate()
+	trump_picker = load("res://ui/trump_picker.tscn").instantiate()
 	$Deck.add_child(trump_picker)
 	var dealt_card = $Deck/Deck.cards.pop_back()
 	trump_picker.add_card(dealt_card)
@@ -44,7 +44,7 @@ func trump_card_selected(player, card, trump):
 	get_tree().create_timer(Hand.CARD_MOVEMENT_DURATION / 4. * 11 + Card.FLIP_DURATION).timeout.connect(start_round)
 
 func start_round():
-	var trick = load("res://trick.tscn").instantiate()
+	var trick = load("res://elements/trick.tscn").instantiate()
 	trick.hands = all_hands
 	trick.trick_finished.connect(_on_trick_finished)
 	$Deck.add_child(trick)

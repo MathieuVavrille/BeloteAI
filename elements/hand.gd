@@ -7,7 +7,7 @@ signal play_card(card: Card)
 @export var big_radius = 200
 @export var natural_order = true
 
-const CARD_SCENE = preload("res://card.tscn")
+const CARD_SCENE = preload("res://elements/card.tscn")
 const CARD_MOVEMENT_DURATION = 0.1
 var angle_between_cards = PI / 12
 

@@ -24,13 +24,9 @@ int next_seed() {
 double random_double() {
   double seed = next_seed();
   return seed/32768;}
-int random_zero_randint(int b) {
+int random_randint(int b) {
   int get_seed = next_seed();
   return get_seed % b;
-}
-int random_randint(int a, int b) {
-  int get_seed = next_seed();
-  return get_seed%(b-a)+a;
 }
 
 using card_t = int;
@@ -70,7 +66,7 @@ array<card_t, 32> createDeck() {
 // Function to shuffle the deck
 void shuffle_deck(array<card_t, 32>& deck) {
   for (int i = 31; i > 0; i--) {
-    int to_swap = random_zero_randint(i);
+    int to_swap = random_randint(i);
     swap(deck[to_swap], deck[i]);
   }
 }
@@ -78,7 +74,7 @@ void shuffle_deck(array<card_t, 32>& deck) {
 // Function to shuffle the deck
 void shuffle_vector_deck(vector<card_t>& deck) {
   for (int i = deck.size() - 1; i > 0; i--) {
-    int to_swap = random_zero_randint(i);
+    int to_swap = random_randint(i);
     swap(deck[to_swap], deck[i]);
   }
 }
@@ -125,115 +121,113 @@ vector<card_t> get_allowed_cards(vector<card_t> cards, int selected_suit, bool o
     }
   }
 }
+struct GameInformation {
+  array<bool, 32> cards_remaining = {true}; // remaining_cards[suit][rank] -> true if not played
+  array<array<bool, 4>, 4> player_has_suit = {true}; // player_has_suit[player][suit] -> true if player might have suit
+  array<int, 4> remaining_cards_in_suit = {8, 8, 8, 8}; // Initially, 8 cards per suit
+  
+  GameInformation() {
+    cards_remaining.fill(true);
+    for (auto& player : player_has_suit)
+      player.fill(true);
+    remaining_cards_in_suit.fill(8);
+  }
+  GameInformation extend_my_hand(vector<card_t> hand, int player_id) const {
+    GameInformation other = copy();
+    other.player_has_suit[player_id].fill(false);
+    for (card_t card: hand) {
+      other.record_play(card);
+      other.player_has_suit[player_id][csuit(card)] = true;
+    }
+    for (int suit = 0; suit < 4; suit++)
+      if (other.remaining_cards_in_suit[suit] == 0)
+	for (int player = 0; player < 4; player++)
+	  if (player != player_id)
+	    other.player_has_suit[player][suit] = false;
+    return other;
+  }
+  GameInformation copy() const {
+    GameInformation other;
+    for (int i = 0; i < 32; i++) other.cards_remaining[i] = cards_remaining[i];
+    for (int i = 0; i < 4; i++)
+      for (int j = 0; j < 4; j++) other.player_has_suit[i][j] = player_has_suit[i][j];
+    for (int i = 0; i < 4; i++) other.remaining_cards_in_suit[i] = remaining_cards_in_suit[i];
+    return other;
+  }
+  void record_play(const card_t card) {
+    cards_remaining[card] = false;
+    remaining_cards_in_suit[csuit(card)]--;
+  }
+  void print_information() const {
+    cout << "Remaining cards" << endl;
+    for (int s = 0; s < 4; ++s) {
+      cout << SUIT_NAMES[s] << ":";
+      for (int r = 0; r < 8; ++r)
+	if (cards_remaining[get_card(s, r)]) cout << " " << r;
+      cout << endl;
+    }
+    for (int p = 0; p < 4; p++) {
+      cout << "P" << p;
+      for (int s = 0; s < 4; s++)
+	cout << " " << ((player_has_suit[p][s]) ? SUIT_NAMES[s] : "·");
+      cout << endl;
+    }
+  }
+};
+
+card_t bot_play_first(const vector<card_t>& hand, const GameInformation gi, bool is_attacking, int player_id, int trump) {
+  GameInformation my_gi = gi.extend_my_hand(hand, player_id);
+  if (has_trump && (opponents_have_trump && is_attacking || has_only_trumps)) {
+    if (has_best_trump)
+      play_best_trump;
+    else
+      play_lowest_trump;
+  }
+  if (has_winning_card) {
+    play_it;
+  }
+  play_smallest;
+  if (has_winning_card && 
+  array<card_t, 4> best_card_in_suit = {-1};
+  array<card_t, 4> lowest_card_in_suit = {-1};
+  return hand[random_randint(hand.size())];
+}
+
+card_t play_bot(const vector<card_t>& hand, const GameInformation gi, int trump, int trick_suit, int opponent_is_winning, card_t best_trick_card, int player_id) {
+  return hand[random_ze];
+}
 
 // GameState struct
 struct GameState {
+  GameInformation gi;
   array<vector<card_t>, 4> hands; // Each player has a hand of cards
   vector<card_t> trick; // Current trick being played
   int start_player; // Index of the current player (0-3)
   int trump; // Trump suit for the game
   int team_points[2] = {0, 0}; // Points for each team
   int best_card_id = 0;
+  bool is_attacking = true;
 
   // Initialize game state
-  GameState(const array<vector<card_t>, 4>& set_hands, int new_trump) {// Modified GameState constructor
+  GameState(const array<vector<card_t>, 4>& set_hands, int new_trump, GameInformation new_gi) {// Modified GameState constructor
     for (int i = 0; i < 4; ++i) {
       hands[i] = set_hands[i]; // Assign predefined hands
     }
     trump = new_trump; // Set the predefined trump suit
     start_player = 0; // Set starting player
+    gi = new_gi;
   }
   
   // Play a trick until all cards are played
   int play_random_game() {
     vector<card_t> possible_hand = get_playable_cards(); // TODO optimize
-    card_t random_card = possible_hand[random_zero_randint(possible_hand.size())];
+    card_t random_card = possible_hand[random_randint(possible_hand.size())];
     while (!play_card(random_card)) {
       possible_hand = get_playable_cards();
-      random_card = possible_hand[random_zero_randint(possible_hand.size())];
+      random_card = possible_hand[random_randint(possible_hand.size())];
     }
     return team_points[0] - team_points[1];
   }
-
-  card_t play_first_suit_greater(int player, int suit, int highest_trump) {
-    for(int i = 0; i < hands[player].size(); i++) {
-      if (csuit(hands[player][i]) == suit and (highest_trump < TRUMP_ORDER[crank(hands[player][i])]))
-	return play_card(player, i);
-    }
-    cout << "Should not be possible" << endl;
-    display_hands();
-    cout << player << " " << suit << " " << highest_trump << endl;
-    std::terminate();
-    return -1;
-  }
-  card_t play_random_allowed_card(int player, int selected_suit, bool opponent_wins, int highest_trump) {
-    vector<card_t> cards = hands[player];
-    bool has_better_trump = false;
-    bool has_selected_suit = false;
-    // Find out if we have the selected suit
-    for (const card_t card: cards) {
-      if (csuit(card) == trump && highest_trump <= TRUMP_ORDER[crank(card)])
-	has_better_trump = true;
-      if (csuit(card) == selected_suit)
-	has_selected_suit = true;
-    }
-    if (selected_suit != trump) {
-      if (has_selected_suit) {
-	return play_first_suit_greater(player, selected_suit, -10);
-      }
-      else { // I don't have the selected suit
-	// cout << "don't have suit " << opponent_wins << " " << has_better_trump << endl;
-	if (opponent_wins && has_better_trump)
-	  return play_first_suit_greater(player, trump, highest_trump);
-	else // my teamate wins
-	  return play_random_card(player);
-      }
-    }
-    else { // selected_suit == trump
-      if (has_better_trump) { // has a better one
-	return play_first_suit_greater(player, trump, highest_trump);
-      }
-      else if (has_selected_suit) { // has trump but less
-	return play_first_suit_greater(player, trump, -10);
-      }
-      else { // Not the suit
-	return play_random_card(player);
-      }
-    }
-  }
-  card_t play_random_card(int player) { // Currently, play the last card (more efficient)
-    // return play_card(player, random_zero_randint(hands[player].size()));
-    card_t played_card = hands[player].back();
-    hands[player].pop_back();
-    return played_card;
-  }
-  card_t play_card(int player, int card_index) {
-    swap(hands[player][card_index], hands[player][hands[player].size() - 1]);
-    card_t played_card = hands[player].back();
-    hands[player].pop_back();
-    return played_card;
-  }
-
-  /*void play_random_trick() {
-    trick.clear();
-    trick.push_back(play_random_card(start_player));
-    int best_card_id = 0;
-    for (int i = 1; i < 4; ++i) {
-      int player = (start_player + i) % 4;
-      card_t played_card = play_random_allowed_card(player, csuit(trick[0]), trick.size() - 2 != best_card_id,
-						    (csuit(trick[best_card_id]) == trump) ? TRUMP_ORDER[crank(trick[best_card_id])] : -10);
-      trick.push_back(played_card);
-      if (card_lt(trick[best_card_id], played_card, trump))
-	best_card_id = i;
-    }
-    int trickPoints = 0;
-    for (const card_t card : trick) {
-      trickPoints += get_card_points(card, trump);
-    }
-    int winning_player = (start_player + best_card_id) % 4;
-    team_points[winning_player % 2] += trickPoints;
-    start_player = winning_player;
-    }*/
 
   vector<card_t> get_playable_cards() {
     if (trick.size() == 0) {
@@ -256,6 +250,9 @@ struct GameState {
   bool play_card(card_t card) { // returns true if it was the last card
     remove_card((start_player + trick.size()) % 4, card);
     trick.push_back(card);
+    gi.record_play(card);
+    if (csuit(trick[0]) != csuit(card))
+      gi.player_has_suit[(start_player + trick.size() - 1) % 4][csuit(trick[0])] = false;
     if (card_lt(trick[best_card_id], card, trump)) {
       best_card_id = trick.size() - 1;
     }
@@ -292,7 +289,8 @@ struct GameState {
   }
 };
 
-GameState random_opponent_hands(vector<card_t> hand, int trump) {
+
+GameState random_opponent_hands(vector<card_t>& hand, int trump, GameInformation& gi) {
   array<array<bool, 8>, 4> card_is_used = {false};
   for(const card_t card: hand)
     card_is_used[csuit(card)][crank(card)] = true;
@@ -316,53 +314,10 @@ GameState random_opponent_hands(vector<card_t> hand, int trump) {
       hand_id++;
     }
   }
-  return GameState(hands, trump);
+  return GameState(hands, trump, gi);
 }
 
-struct GameInformation {
-  array<bool, 32> cards_remaining = {true}; // remaining_cards[suit][rank] -> true if not played
-  array<array<bool, 4>, 4> player_has_suit = {true}; // player_has_suit[player][suit] -> true if player might have suit
-  array<int, 4> remaining_cards_in_suit = {8, 8, 8, 8}; // Initially, 8 cards per suit
 
-  GameInformation() {
-    cards_remaining.fill(true);
-    for (auto& player : player_has_suit)
-      player.fill(true);
-    remaining_cards_in_suit.fill(8);
-  }
-
-  GameInformation copy() {
-    GameInformation other;
-    for (int i = 0; i < 32; i++) other.cards_remaining[i] = cards_remaining[i];
-    for (int i = 0; i < 4; i++)
-      for (int j = 0; j < 4; j++)
-	other.player_has_suit[i][j] = player_has_suit[i][j];
-    for (int i = 0; i < 4; i++)
-      other.remaining_cards_in_suit[i] = remaining_cards_in_suit[i];
-    return other;
-  }
-
-  void record_play(const card_t card) {
-    cards_remaining[card] = false;
-    remaining_cards_in_suit[csuit(card)]--;
-  }
-
-  void print_information() const {
-    cout << "Remaining cards" << endl;
-    for (int s = 0; s < 4; ++s) {
-      cout << SUIT_NAMES[s] << ":";
-      for (int r = 0; r < 8; ++r) {
-	if (cards_remaining[get_card(s, r)]) cout << " " << r;
-      }
-      cout << endl;
-    }
-    cout << "Remaining cards in Each Suit:" << endl;
-    for (int s = 0; s < 4; ++s) {
-      cout << " " << remaining_cards_in_suit[s] << SUIT_NAMES[s];
-    }
-    cout << endl;
-  }
-};
 
 
 using node_t = int;
@@ -425,7 +380,7 @@ struct Node {
     node_t next_node_id = card_played[card_to_play];
     bool is_finished = state.play_card(card_to_play);
     int res;
-    if (is_finished) {
+    if (is_finished) { // We are at the end of the tree
       nb_tests++;
       res = state.team_points[0] - state.team_points[1];
       nb_wins += res;
@@ -437,7 +392,7 @@ struct Node {
       nb_wins += res;
       return res;
     }
-    else {
+    else { // Go down the tree
       nb_tests++;
       res = get_node(next_node_id).mcts(state);
       nb_wins += res;
@@ -449,9 +404,7 @@ struct Node {
       if (card_played[i] != -1) {
 	Node& next_node = get_node(card_played[i]);
 	cout << indent << card_to_string(i) << ":  " << (int) next_node.average() << "  " << next_node.nb_tests << endl;
-	if (next_node.nb_tests > 1000) {
-	  next_node.print_scores(indent + " | ");
-	}
+	if (next_node.nb_tests > 1000) next_node.print_scores(indent + " | ");
       }
     }
   }
@@ -473,17 +426,103 @@ int main() {
   hand.push_back(get_card(1, 3));
   hand.push_back(get_card(1, 4));
   hand.push_back(get_card(2, 0));
-  hand.push_back(get_card(3, 4));
+  hand.push_back(get_card(2, 4));
   cout_hand(hand);
   cout << "TRUMP: " << SUIT_NAMES[0] << endl;
   GameInformation gi;
-  for (card_t card: hand) gi.record_play(card);
+  GameInformation my_gi = gi.extend_my_hand(hand, 0);
+  my_gi.print_information();
+  /*for (card_t card: hand) gi.record_play(card);
   Node& node = get_node(current_node_alloc_id++);
   node.init();
   for(int i = 0; i < 20000; i++) {
-    GameState gs = random_opponent_hands(hand, 0);
+    GameInformation gi;
+    GameState gs = random_opponent_hands(hand, 0, gi);
     node.mcts(gs);
   }
-  node.print_scores("");
+  node.print_scores("");*/
   return 0;
 }
+
+
+ 
+
+  /*card_t play_first_suit_greater(int player, int suit, int highest_trump) {
+    for(int i = 0; i < hands[player].size(); i++) {
+      if (csuit(hands[player][i]) == suit and (highest_trump < TRUMP_ORDER[crank(hands[player][i])]))
+	return play_card(player, i);
+    }
+    cout << "Should not be possible" << endl;
+    display_hands();
+    cout << player << " " << suit << " " << highest_trump << endl;
+    std::terminate();
+    return -1;
+  }
+  card_t play_random_allowed_card(int player, int selected_suit, bool opponent_wins, int highest_trump) {
+    vector<card_t> cards = hands[player];
+    bool has_better_trump = false;
+    bool has_selected_suit = false;
+    // Find out if we have the selected suit
+    for (const card_t card: cards) {
+      if (csuit(card) == trump && highest_trump <= TRUMP_ORDER[crank(card)])
+	has_better_trump = true;
+      if (csuit(card) == selected_suit)
+	has_selected_suit = true;
+    }
+    if (selected_suit != trump) {
+      if (has_selected_suit) {
+	return play_first_suit_greater(player, selected_suit, -10);
+      }
+      else { // I don't have the selected suit
+	// cout << "don't have suit " << opponent_wins << " " << has_better_trump << endl;
+	if (opponent_wins && has_better_trump)
+	  return play_first_suit_greater(player, trump, highest_trump);
+	else // my teamate wins
+	  return play_random_card(player);
+      }
+    }
+    else { // selected_suit == trump
+      if (has_better_trump) { // has a better one
+	return play_first_suit_greater(player, trump, highest_trump);
+      }
+      else if (has_selected_suit) { // has trump but less
+	return play_first_suit_greater(player, trump, -10);
+      }
+      else { // Not the suit
+	return play_random_card(player);
+      }
+    }
+    }
+  card_t play_random_card(int player) { // Currently, play the last card (more efficient)
+    // return play_card(player, random_randint(hands[player].size()));
+    card_t played_card = hands[player].back();
+    hands[player].pop_back();
+    return played_card;
+    }
+  card_t play_card(int player, int card_index) {
+    swap(hands[player][card_index], hands[player][hands[player].size() - 1]);
+    card_t played_card = hands[player].back();
+    hands[player].pop_back();
+    return played_card;
+    }*/
+
+  /*void play_random_trick() {
+    trick.clear();
+    trick.push_back(play_random_card(start_player));
+    int best_card_id = 0;
+    for (int i = 1; i < 4; ++i) {
+      int player = (start_player + i) % 4;
+      card_t played_card = play_random_allowed_card(player, csuit(trick[0]), trick.size() - 2 != best_card_id,
+						    (csuit(trick[best_card_id]) == trump) ? TRUMP_ORDER[crank(trick[best_card_id])] : -10);
+      trick.push_back(played_card);
+      if (card_lt(trick[best_card_id], played_card, trump))
+	best_card_id = i;
+    }
+    int trickPoints = 0;
+    for (const card_t card : trick) {
+      trickPoints += get_card_points(card, trump);
+    }
+    int winning_player = (start_player + best_card_id) % 4;
+    team_points[winning_player % 2] += trickPoints;
+    start_player = winning_player;
+    }*/
