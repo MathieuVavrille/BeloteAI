@@ -25,8 +25,6 @@ mouse_filter = 1
 
 [node name="Hand" parent="Control" node_paths=PackedStringArray("card_picker") instance=ExtResource("1_qcspd")]
 position = Vector2(0, 0)
-small_radius = 100
-big_radius = 200
 card_picker = NodePath("../../Control2/CardPicker")
 
 [node name="Control2" type="Control" parent="."]
