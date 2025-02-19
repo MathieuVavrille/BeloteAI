@@ -13,7 +13,6 @@ void initialize_ai_module(ModuleInitializationLevel p_level) {
 		return;
 	}
 
-	GDREGISTER_CLASS(GDExample);
 	GDREGISTER_CLASS(CardUtil);
 }
 

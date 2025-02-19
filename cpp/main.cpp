@@ -29,28 +29,6 @@ int random_randint(int b) {
   return get_seed % b;
 }
 
-using card_t = int;
-int csuit(const card_t card) { return card >> 3; }
-int crank(const card_t card) { return card & 0x7; }
-card_t get_card(const int suit, const int rank) { return suit << 3 | rank; }
-string card_to_string(const card_t card) { return RANK_NAMES[crank(card)] + SUIT_NAMES[csuit(card)]; }
-int get_card_points(const card_t card, const int trump_suit) {
-  return (csuit(card) == trump_suit) ? TRUMP_POINTS[crank(card)] : NORMAL_POINTS[crank(card)];
-}
-bool card_lt(const card_t card1, const card_t card2, const int trump) {
-  if (csuit(card1) == trump)
-    return csuit(card2) == trump && TRUMP_ORDER[crank(card1)] < TRUMP_ORDER[crank(card2)];
-  else
-    return csuit(card2) == trump || (csuit(card2) == csuit(card1) && NORMAL_ORDER[crank(card1)] < NORMAL_ORDER[crank(card2)]);
-}
-
-void cout_hand(vector<card_t> hand) {
-  for (card_t card: hand) {
-    cout << card_to_string(card) << " ";
-  }
-  cout << endl;
-}
-
 // Function to create a deck of 32 cards
 array<card_t, 32> createDeck() {
   array<card_t, 32> deck;
@@ -144,97 +122,6 @@ card_t play_bot(const vector<card_t>& hand, const GameInformation gi, int trump,
   return hand[random_ze];
 }
 
-// GameState struct
-struct GameState {
-  GameInformation gi;
-  array<vector<card_t>, 4> hands; // Each player has a hand of cards
-  vector<card_t> trick; // Current trick being played
-  int start_player; // Index of the current player (0-3)
-  int trump; // Trump suit for the game
-  int team_points[2] = {0, 0}; // Points for each team
-  int best_card_id = 0;
-  bool is_attacking = true;
-
-  // Initialize game state
-  GameState(const array<vector<card_t>, 4>& set_hands, int new_trump, GameInformation new_gi) {// Modified GameState constructor
-    for (int i = 0; i < 4; ++i) {
-      hands[i] = set_hands[i]; // Assign predefined hands
-    }
-    trump = new_trump; // Set the predefined trump suit
-    start_player = 0; // Set starting player
-    gi = new_gi;
-  }
-  
-  // Play a trick until all cards are played
-  int play_random_game() {
-    vector<card_t> possible_hand = get_playable_cards(); // TODO optimize
-    card_t random_card = possible_hand[random_randint(possible_hand.size())];
-    while (!play_card(random_card)) {
-      possible_hand = get_playable_cards();
-      random_card = possible_hand[random_randint(possible_hand.size())];
-    }
-    return team_points[0] - team_points[1];
-  }
-
-  vector<card_t> get_playable_cards() {
-    if (trick.size() == 0) {
-      return hands[start_player];
-    }
-    else {
-      int current_player = (start_player + trick.size()) % 4;
-      return get_allowed_cards(hands[current_player], csuit(trick[0]), trick.size() - 2 != best_card_id, trump, 
-			       (csuit(trick[best_card_id]) == trump) ? TRUMP_ORDER[crank(trick[best_card_id])] : -10);
-    }
-  }
-  void remove_card(int player, card_t card) {
-    for(int i = 0; i < hands[player].size(); i++) {
-      if (hands[player][i] == card) {
-	play_card(player, i);
-	return;
-      }
-    }
-  }
-  bool play_card(card_t card) { // returns true if it was the last card
-    remove_card((start_player + trick.size()) % 4, card);
-    trick.push_back(card);
-    gi.record_play(card);
-    if (csuit(trick[0]) != csuit(card))
-      gi.player_has_suit[(start_player + trick.size() - 1) % 4][csuit(trick[0])] = false;
-    if (card_lt(trick[best_card_id], card, trump)) {
-      best_card_id = trick.size() - 1;
-    }
-    if (trick.size() == 4) {
-      //cout_hand(trick);
-      int trickPoints = 0;
-      for (const card_t card : trick) {
-	trickPoints += get_card_points(card, trump);
-      }
-      int winning_player = (start_player + best_card_id) % 4;
-      team_points[winning_player % 2] += trickPoints;
-      start_player = winning_player;
-      if (hands[0].size() == 0) {
-	team_points[start_player % 2] += 10;
-	return true;
-      }
-      trick.clear();
-      best_card_id = 0;
-      //display_hands();
-      //cout << "Player " << start_player << " to play" << endl;
-    }
-    return false;
-  }
-  
-  // Display hands
-  void display_hands() const {
-    for (int i = 0; i < 4; ++i) {
-      cout << "Player " << i << "'s hand:";
-      for (const auto& card : hands[i]) {
-	cout << "  " << card_to_string(card);
-      }
-      cout << endl;
-    }
-  }
-};
 
 
 GameState random_opponent_hands(vector<card_t>& hand, int trump, GameInformation& gi) {

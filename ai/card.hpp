@@ -31,4 +31,8 @@ bool card_lt(const card_t card1, const card_t card2, const int trump);
 
 void cout_hand(std::vector<card_t> hand);
 
+std::vector<card_t> get_cards_greater(std::vector<card_t> cards, int suit, int highest_trump);
+
+std::vector<card_t> get_allowed_cards(std::vector<card_t> cards, int selected_suit, bool opponent_wins, int trump, int highest_trump);
+
 #endif

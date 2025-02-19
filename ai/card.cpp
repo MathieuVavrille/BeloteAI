@@ -40,3 +40,47 @@ void cout_hand(std::vector<card_t> hand) {
   }
   std::cout << std::endl;
 }
+
+std::vector<card_t> get_cards_greater(std::vector<card_t> cards, int suit, int highest_trump) {
+  std::vector<card_t> res;
+  for(const card_t card: cards) {
+    if (csuit(card) == suit and (highest_trump < TRUMP_ORDER[crank(card)]))
+      res.push_back(card);
+  }
+  return res;
+}
+
+std::vector<card_t> get_allowed_cards(std::vector<card_t> cards, int selected_suit, bool opponent_wins, int trump, int highest_trump) {
+  bool has_better_trump = false;
+  bool has_selected_suit = false;
+  // Find out if we have the selected suit
+  for (const card_t card: cards) {
+    if (csuit(card) == trump && highest_trump <= TRUMP_ORDER[crank(card)])
+      has_better_trump = true;
+    if (csuit(card) == selected_suit)
+      has_selected_suit = true;
+  }
+  if (selected_suit != trump) {
+    if (has_selected_suit) {
+      return get_cards_greater(cards, selected_suit, -10);
+    }
+    else { // I don't have the selected suit
+      // cout << "don't have suit " << opponent_wins << " " << has_better_trump << endl;
+      if (opponent_wins && has_better_trump)
+	return get_cards_greater(cards, trump, highest_trump);
+      else // my teamate wins
+	return cards;
+    }
+  }
+  else { // selected_suit == trump
+    if (has_better_trump) { // has a better one
+      return get_cards_greater(cards, trump, highest_trump);
+    }
+    else if (has_selected_suit) { // has trump but less
+      return get_cards_greater(cards, trump, -10);
+    }
+    else { // Not the suit
+      return cards;
+    }
+  }
+}

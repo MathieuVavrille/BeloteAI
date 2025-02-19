@@ -1,3 +1,5 @@
+#ifndef GAME_INFORMATION_H
+#define GAME_INFORMATION_H
 
 #include "card.hpp"
 
@@ -17,3 +19,5 @@ struct GameInformation {
   GameInformation copy() const;
   void record_play(const card_t card);
 };
+
+#endif
