@@ -1,6 +1,6 @@
 #include "register_types.hpp"
 
-#include "card_util.hpp"
+#include "ai_util.hpp"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -13,7 +13,7 @@ void initialize_ai_module(ModuleInitializationLevel p_level) {
 		return;
 	}
 
-	GDREGISTER_CLASS(CardUtil);
+	GDREGISTER_CLASS(AiUtil);
 }
 
 void uninitialize_ai_module(ModuleInitializationLevel p_level) {

@@ -16,7 +16,7 @@ GameInformation::GameInformation() {
   remaining_cards_in_suit.fill(8);
 }
 
-GameInformation GameInformation::extend_my_hand(vector<card_t> hand, int player_id) const {
+/*GameInformation GameInformation::extend_my_hand(vector<card_t> hand, int player_id) const {
   GameInformation other = copy();
   other.player_has_suit[player_id].fill(false);
   for (card_t card: hand) {
@@ -29,7 +29,7 @@ GameInformation GameInformation::extend_my_hand(vector<card_t> hand, int player_
 	if (player != player_id)
 	  other.player_has_suit[player][suit] = false;
   return other;
-}
+  }*/
 
 GameInformation GameInformation::copy() const {
   GameInformation other;

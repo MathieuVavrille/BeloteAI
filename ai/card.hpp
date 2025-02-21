@@ -8,7 +8,7 @@
 #include <vector>
 
 
-inline const std::array<std::string, 4> SUIT_NAMES = {"♥", "♦", "♣", "♠"};
+inline const std::array<std::string, 4> SUIT_NAMES = {"-K", "-C", "-H", "-S"};
 inline const std::array<std::string, 8> RANK_NAMES = {" 7", " 8", " 9", "10", " J", " Q", " K", " A"};
 inline const std::array<int, 8> NORMAL_POINTS = {0, 0, 0, 10, 2, 3, 4, 11}; // 7, 8, 9, 10, J, Q, K, A
 inline const std::array<int, 8> NORMAL_ORDER = {-1, 0, 1, 10, 2, 3, 4, 11}; // total order on the rank
