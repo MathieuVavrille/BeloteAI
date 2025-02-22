@@ -29,6 +29,8 @@ public:
   void record_card(card_t card);
   void set_trump(int new_trump);
   void add_card(int suit, int rank);
+  void run_mcts(int max_milliseconds);
+  void print_results();
   
 };
 

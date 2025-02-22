@@ -93,3 +93,32 @@ bool GameState::play_card(card_t card) { // returns true if it was the last card
     cout << endl;
   }
   }*/
+
+
+
+GameState random_opponent_hands(vector<card_t>& hand, int trump, GameInformation& gi) {
+  array<array<bool, 8>, 4> card_is_used = {false};
+  for(const card_t card: hand)
+    card_is_used[csuit(card)][crank(card)] = true;
+  vector<card_t> deck;
+  for(int suit = 0; suit < 4; suit++) {
+    for(int rank = 0; rank < 8; rank++) {
+      if (!card_is_used[suit][rank]) {
+	deck.push_back(get_card(suit, rank));
+      }
+    }
+  }
+  shuffle_deck(deck);
+  array<vector<card_t>, 4> hands;
+  for(const card_t card: hand)
+    hands[0].push_back(card);
+  int hand_id = 1;
+  while (deck.size() != 0) {
+    hands[hand_id].push_back(deck.back());
+    deck.pop_back();
+    if (hands[hand_id].size() == 8) {
+      hand_id++;
+    }
+  }
+  return GameState(hands, trump, gi);
+}

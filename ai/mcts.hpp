@@ -12,6 +12,8 @@
 
 using node_t = int;
 
+#define ALLOC_SIZE 3000
+
 extern node_t current_node_alloc_id;
 
 struct Node {

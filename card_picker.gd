@@ -5,8 +5,8 @@ const CARD_SCENE = preload("res://elements/card.tscn")
 
 @export var hand: SimpleHand
 var cards = []
-const CARDS_HEIGHT = 240/2
-const CARDS_WIDTH = 168/2
+const CARDS_HEIGHT = 240 / 2
+const CARDS_WIDTH = 168 / 2
 const CARDS_SPACING = 10
 
 func rank_to_index(rank):

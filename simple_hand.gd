@@ -24,7 +24,6 @@ func send_play_card_signal(card):
 
 func _input(event):
 	if event is InputEventMouseButton and event.pressed:
-		print("pressed")
 		for i in range(len(cards)-1, -1, -1):
 			if cards[i].is_hovered:
 				var selected_card = cards.pop_at(i)

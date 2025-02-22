@@ -2,9 +2,15 @@
 #include "ai_util.hpp"
 
 #include "card.hpp"
+#include "game_state.hpp"
 #include "mcts.hpp"
 
+#include <chrono>
 #include <godot_cpp/core/class_db.hpp>
+
+chrono::high_resolution_clock::time_point start;
+#define MARKTIME start = chrono::high_resolution_clock::now();
+#define TIME chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now() - start).count()
 
 using namespace godot;
 
@@ -38,10 +44,25 @@ void AiUtil::add_card(int suit, int rank) {
   UtilityFunctions::print(card_print);
 }
 
+void AiUtil::run_mcts(int max_milliseconds) {
+  //MARKTIME;
+  //while (current_node_alloc_id < ALLOC_SIZE - 10 && TIME < max_milliseconds) {
+  //UtilityFunctions::print(TIME);
+    GameState gs = random_opponent_hands(my_hand, trump, gi);
+    //node.mcts(gs);
+    //}
+}
+
+void AiUtil::print_results() {
+  UtilityFunctions::print("Finished");
+}
+
 void AiUtil::_bind_methods()
 {
   ClassDB::bind_method(D_METHOD("remaining_cards"), &AiUtil::remaining_cards);
   ClassDB::bind_method(D_METHOD("record_card"), &AiUtil::record_card);
   ClassDB::bind_method(D_METHOD("set_trump"), &AiUtil::set_trump);
   ClassDB::bind_method(D_METHOD("add_card"), &AiUtil::add_card);
+  ClassDB::bind_method(D_METHOD("run_mcts"), &AiUtil::run_mcts);
+  ClassDB::bind_method(D_METHOD("print_results"), &AiUtil::print_results);
 }

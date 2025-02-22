@@ -19,7 +19,7 @@ struct GameState {
   int team_points[2] = {0, 0}; // Points for each team
   int best_card_id = 0;
   bool is_attacking = true;
-
+  
   GameState(const std::array<std::vector<card_t>, 4>& set_hands, int new_trump, GameInformation new_gi);
   
   int play_random_game();
@@ -32,5 +32,7 @@ struct GameState {
   
   void display_hands() const;
 };
+
+GameState random_opponent_hands(vector<card_t>& hand, int trump, GameInformation& gi);
 
 #endif

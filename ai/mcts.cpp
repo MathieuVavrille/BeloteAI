@@ -7,8 +7,6 @@
 #include <cmath>
 #include <vector>
 
-#define ALLOC_SIZE 30000
-
 using node_t = int;
 
 node_t current_node_alloc_id = 0;

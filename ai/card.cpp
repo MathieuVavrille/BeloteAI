@@ -1,11 +1,15 @@
 
 #include "card.hpp"
 
+#include "utils.hpp"
+
 #include <iostream>
 #include <string>
 #include <vector>
 
 using card_t = int;
+
+using namespace std;
 
 int csuit(const card_t card) {
   return card >> 3;
@@ -19,7 +23,7 @@ card_t get_card(const int suit, const int rank) {
   return suit << 3 | rank;
 }
 
-std::string card_to_string(const card_t card) {
+string card_to_string(const card_t card) {
   return RANK_NAMES[crank(card)] + SUIT_NAMES[csuit(card)];
 }
 
@@ -34,15 +38,15 @@ bool card_lt(const card_t card1, const card_t card2, const int trump) {
     return csuit(card2) == trump || (csuit(card2) == csuit(card1) && NORMAL_ORDER[crank(card1)] < NORMAL_ORDER[crank(card2)]);
 }
 
-void cout_hand(std::vector<card_t> hand) {
+void cout_hand(vector<card_t> hand) {
   for (card_t card: hand) {
-    std::cout << card_to_string(card) << " ";
+    cout << card_to_string(card) << " ";
   }
-  std::cout << std::endl;
+  cout << endl;
 }
 
-std::vector<card_t> get_cards_greater(std::vector<card_t> cards, int suit, int highest_trump) {
-  std::vector<card_t> res;
+vector<card_t> get_cards_greater(vector<card_t> cards, int suit, int highest_trump) {
+  vector<card_t> res;
   for(const card_t card: cards) {
     if (csuit(card) == suit and (highest_trump < TRUMP_ORDER[crank(card)]))
       res.push_back(card);
@@ -50,7 +54,7 @@ std::vector<card_t> get_cards_greater(std::vector<card_t> cards, int suit, int h
   return res;
 }
 
-std::vector<card_t> get_allowed_cards(std::vector<card_t> cards, int selected_suit, bool opponent_wins, int trump, int highest_trump) {
+vector<card_t> get_allowed_cards(vector<card_t> cards, int selected_suit, bool opponent_wins, int trump, int highest_trump) {
   bool has_better_trump = false;
   bool has_selected_suit = false;
   // Find out if we have the selected suit
@@ -82,5 +86,13 @@ std::vector<card_t> get_allowed_cards(std::vector<card_t> cards, int selected_su
     else { // Not the suit
       return cards;
     }
+  }
+}
+
+// Function to shuffle the deck
+void shuffle_deck(vector<card_t>& deck) {
+  for (int i = deck.size() - 1; i > 0; i--) {
+    int to_swap = random_randint(i);
+    swap(deck[to_swap], deck[i]);
   }
 }

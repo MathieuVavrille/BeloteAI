@@ -35,4 +35,6 @@ std::vector<card_t> get_cards_greater(std::vector<card_t> cards, int suit, int h
 
 std::vector<card_t> get_allowed_cards(std::vector<card_t> cards, int selected_suit, bool opponent_wins, int trump, int highest_trump);
 
+void shuffle_deck(std::vector<card_t>& deck);
+
 #endif
