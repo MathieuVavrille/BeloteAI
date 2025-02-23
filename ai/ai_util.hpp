@@ -31,6 +31,7 @@ public:
   void add_card(int suit, int rank);
   void run_mcts(int max_milliseconds);
   void print_results();
+  float get_card_average_score(int suit, int rank);
   
 };
 

@@ -62,6 +62,13 @@ void AiUtil::print_results() {
   }
 }
 
+float AiUtil::get_card_average_score(int suit, int rank) {
+  card_t card = get_card(suit, rank);
+  if (node.card_played[card] == -1)
+    return 0.;
+  return get_node(node.card_played[card]).average();
+}
+
 void AiUtil::_bind_methods()
 {
   ClassDB::bind_method(D_METHOD("remaining_cards"), &AiUtil::remaining_cards);
@@ -70,4 +77,5 @@ void AiUtil::_bind_methods()
   ClassDB::bind_method(D_METHOD("add_card"), &AiUtil::add_card);
   ClassDB::bind_method(D_METHOD("run_mcts"), &AiUtil::run_mcts);
   ClassDB::bind_method(D_METHOD("print_results"), &AiUtil::print_results);
+  ClassDB::bind_method(D_METHOD("get_card_average_score"), &AiUtil::get_card_average_score);
 }

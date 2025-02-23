@@ -103,3 +103,7 @@ static func generate_order(trump):
 		else:
 			return CARDS_VALUES[card1.rank] < CARDS_VALUES[card2.rank]
 	return order
+
+func set_label(value: int):
+	$Label.visible = true
+	$Label.text = str(value)
