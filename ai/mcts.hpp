@@ -12,7 +12,7 @@
 
 using node_t = int;
 
-#define ALLOC_SIZE 3000
+#define ALLOC_SIZE 300000
 
 extern node_t current_node_alloc_id;
 
@@ -23,9 +23,9 @@ struct Node {
 
   void init();
   
-  inline float average() const;
+  float average();
   
-  inline float upper_bound(float total_nb_tests, float factor) const;
+  float upper_bound(float total_nb_tests, float factor);
   
   node_t get_node_to_play(std::vector<card_t> cards, bool is_opponent);
   

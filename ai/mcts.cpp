@@ -7,6 +7,10 @@
 #include <cmath>
 #include <vector>
 
+#include <godot_cpp/core/class_db.hpp>
+
+using namespace godot;
+
 using node_t = int;
 
 node_t current_node_alloc_id = 0;
@@ -17,11 +21,11 @@ void Node::init() {
   card_played.fill(-1);
 }
   
-inline float Node::average() const {
+float Node::average() {
   return nb_wins/nb_tests;
 }
   
-inline float Node::upper_bound(float total_nb_tests, float factor) const {
+float Node::upper_bound(float total_nb_tests, float factor) {
   return factor * nb_wins / nb_tests + 40 * sqrt(2*log(1+total_nb_tests)/nb_tests);
 }
   

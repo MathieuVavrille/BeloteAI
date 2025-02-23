@@ -17,6 +17,7 @@ using namespace godot;
 AiUtil::AiUtil()
 {
   node = get_node(0);
+  node.init();
   current_node_alloc_id = 1;
   UtilityFunctions::print("Hello from GDExtension!");
 }
@@ -45,16 +46,20 @@ void AiUtil::add_card(int suit, int rank) {
 }
 
 void AiUtil::run_mcts(int max_milliseconds) {
-  //MARKTIME;
-  //while (current_node_alloc_id < ALLOC_SIZE - 10 && TIME < max_milliseconds) {
-  //UtilityFunctions::print(TIME);
+  MARKTIME;
+  while (current_node_alloc_id < ALLOC_SIZE - 10 && TIME < max_milliseconds) {
     GameState gs = random_opponent_hands(my_hand, trump, gi);
-    //node.mcts(gs);
-    //}
+    node.mcts(gs);
+  }
 }
 
 void AiUtil::print_results() {
   UtilityFunctions::print("Finished");
+  UtilityFunctions::print(node.average());
+  for(card_t card: my_hand) {
+    UtilityFunctions::print(card_to_string(card).c_str());
+    UtilityFunctions::print(get_node(node.card_played[card]).average());
+  }
 }
 
 void AiUtil::_bind_methods()

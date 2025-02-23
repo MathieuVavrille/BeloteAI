@@ -27,7 +27,7 @@ func _ready() -> void:
 			add_child(card)
 			card.flip()
 			card.mouse_movement.connect(on_card_mouse_movement)
-			
+
 
 func on_card_mouse_movement():
 	for card in cards:

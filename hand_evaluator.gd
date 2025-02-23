@@ -10,7 +10,7 @@ var run_count = 0
 func _process(delta: float) -> void:
 	if is_running and run_count < 10:
 		print("Run ", run_count)
-		ai_util.run_mcts(100)
+		ai_util.run_mcts(1000)
 		run_count += 1
 	if run_count == 10:
 		run_count = 0
