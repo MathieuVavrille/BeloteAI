@@ -12,7 +12,7 @@
 
 using node_t = int;
 
-#define ALLOC_SIZE 300000
+#define ALLOC_SIZE 1000000
 
 extern node_t current_node_alloc_id;
 

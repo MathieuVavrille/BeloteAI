@@ -96,7 +96,7 @@ bool GameState::play_card(card_t card) { // returns true if it was the last card
 
 
 
-GameState random_opponent_hands(vector<card_t>& hand, int trump, GameInformation& gi) {
+GameState fill_opponent_hands(vector<card_t>& hand, int trump, GameInformation& gi) {
   array<array<bool, 8>, 4> card_is_used = {false};
   for(const card_t card: hand)
     card_is_used[csuit(card)][crank(card)] = true;
@@ -110,14 +110,12 @@ GameState random_opponent_hands(vector<card_t>& hand, int trump, GameInformation
   }
   shuffle_deck(deck);
   array<vector<card_t>, 4> hands;
-  for(const card_t card: hand)
+  for (const card_t card: hand)
     hands[0].push_back(card);
-  int hand_id = 1;
-  while (deck.size() != 0) {
-    hands[hand_id].push_back(deck.back());
-    deck.pop_back();
-    if (hands[hand_id].size() == 8) {
-      hand_id++;
+  for (int i = 0; i < 4; i++) {
+    while (hands[i].size() != 8) {
+      hands[i].push_back(deck.back());
+      deck.pop_back();
     }
   }
   return GameState(hands, trump, gi);

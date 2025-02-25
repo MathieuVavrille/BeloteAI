@@ -33,6 +33,6 @@ struct GameState {
   void display_hands() const;
 };
 
-GameState random_opponent_hands(vector<card_t>& hand, int trump, GameInformation& gi);
+GameState fill_opponent_hands(vector<card_t>& hand, int trump, GameInformation& gi);
 
 #endif

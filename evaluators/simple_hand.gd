@@ -28,7 +28,6 @@ func _input(event):
 			if cards[i].is_hovered:
 				var selected_card = cards.pop_at(i)
 				selected_card.mouse_movement.disconnect(on_card_mouse_movement)
-				print("sent")
 				card_picker.add_card(selected_card)
 				position_cards()
 				return

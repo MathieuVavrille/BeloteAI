@@ -13,8 +13,7 @@ using namespace godot;
 class AiUtil : public RefCounted {
   GDCLASS(AiUtil, RefCounted);
   
-  Node node;
-  std::vector<card_t> my_hand;
+  std::vector<card_t> hand;
   GameInformation gi;
   int trump = 0;
   
@@ -22,16 +21,19 @@ protected:
   static void _bind_methods();
   
 public:
-  AiUtil();
-  ~AiUtil();
-
-  int remaining_cards();
+  //AiUtil();
+  
+  void init();
+  void init_for_trumps();
+  void clear_hand();
   void record_card(card_t card);
   void set_trump(int new_trump);
   void add_card(int suit, int rank);
-  void run_mcts(int max_milliseconds);
+  void run_mcts(int max_milliseconds, int trump);
+  void run_trump_mcts(int max_milliseconds);
   void print_results();
   float get_card_average_score(int suit, int rank);
+  float get_trump_average_score(int trump);
   
 };
 
