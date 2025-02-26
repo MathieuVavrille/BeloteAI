@@ -4,7 +4,7 @@
 #include "card.hpp"
 
 #include <array>
-// #include <iostream>
+#include <iostream>
 #include <vector>
 
 using namespace std;
@@ -45,7 +45,7 @@ void GameInformation::record_play(const card_t card) {
   remaining_cards_in_suit[csuit(card)]--;
 }
 
-/*void print_information() const {
+void GameInformation::print_information() const {
   cout << "Remaining cards" << endl;
   for (int s = 0; s < 4; ++s) {
   cout << SUIT_NAMES[s] << ":";
@@ -59,4 +59,12 @@ void GameInformation::record_play(const card_t card) {
   cout << " " << ((player_has_suit[p][s]) ? SUIT_NAMES[s] : "·");
   cout << endl;
   }
-  }*/
+}
+
+bool GameInformation::hands_are_allowed(const array<vector<card_t>, 4>& hands) {
+  for (int player = 0; player < 4; player++)
+    for (const card_t card: hands[player])
+      if (!player_has_suit[player][csuit(card)])
+	return false;
+  return true;
+}

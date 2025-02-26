@@ -17,6 +17,8 @@ struct GameInformation {
   // GameInformation extend_my_hand(vector<card_t> hand, int player_id) const;
   GameInformation copy() const;
   void record_play(const card_t card);
+  bool hands_are_allowed(const std::array<std::vector<card_t>, 4>& hands);
+  void print_information() const;
 };
 
 

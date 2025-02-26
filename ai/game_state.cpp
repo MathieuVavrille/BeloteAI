@@ -38,13 +38,13 @@ vector<card_t> GameState::get_playable_cards() {
   }
   else {
     int current_player = (start_player + trick.size()) % 4;
-    return get_allowed_cards(hands[current_player], csuit(trick[0]), trick.size() - 2 != best_card_id, trump, 
+    return get_allowed_cards(hands[current_player], csuit(trick[0]), (int) trick.size() - 2 != best_card_id, trump, 
 			     (csuit(trick[best_card_id]) == trump) ? TRUMP_ORDER[crank(trick[best_card_id])] : -10);
   }
 }
 
 void GameState::remove_card(int player, card_t card) {
-  for(int i = 0; i < hands[player].size(); i++) {
+  for(int i = 0; i < (int) hands[player].size(); i++) {
     if (hands[player][i] == card) {
       swap(hands[player][i], hands[player][hands[player].size() - 1]);
       hands[player].pop_back();
@@ -63,7 +63,6 @@ bool GameState::play_card(card_t card) { // returns true if it was the last card
     best_card_id = trick.size() - 1;
   }
   if (trick.size() == 4) {
-    //cout_hand(trick);
     int trickPoints = 0;
     for (const card_t card : trick) {
       trickPoints += get_card_points(card, trump);
@@ -77,14 +76,12 @@ bool GameState::play_card(card_t card) { // returns true if it was the last card
     }
     trick.clear();
     best_card_id = 0;
-    //display_hands();
-    //cout << "Player " << start_player << " to play" << endl;
   }
   return false;
 }
   
 // Display hands
-/*void GameState::display_hands() const {
+void GameState::display_hands() const {
   for (int i = 0; i < 4; ++i) {
     cout << "Player " << i << "'s hand:";
     for (const auto& card : hands[i]) {
@@ -92,22 +89,19 @@ bool GameState::play_card(card_t card) { // returns true if it was the last card
     }
     cout << endl;
   }
-  }*/
+}
 
 
-
+// Fills all the hands (up to 8 cards) with random available cards
+// Does not take into account the game information missing suits for players
 GameState fill_opponent_hands(vector<card_t>& hand, int trump, GameInformation& gi) {
-  array<array<bool, 8>, 4> card_is_used = {false};
+  array<bool, 32> cards_remaining= gi.cards_remaining;
   for(const card_t card: hand)
-    card_is_used[csuit(card)][crank(card)] = true;
+    cards_remaining[card] = false;
   vector<card_t> deck;
-  for(int suit = 0; suit < 4; suit++) {
-    for(int rank = 0; rank < 8; rank++) {
-      if (!card_is_used[suit][rank]) {
-	deck.push_back(get_card(suit, rank));
-      }
-    }
-  }
+  for(card_t card = 0; card < 32; card++)
+    if (cards_remaining[card])
+      deck.push_back(card);
   shuffle_deck(deck);
   array<vector<card_t>, 4> hands;
   for (const card_t card: hand)
@@ -119,4 +113,31 @@ GameState fill_opponent_hands(vector<card_t>& hand, int trump, GameInformation& 
     }
   }
   return GameState(hands, trump, gi);
+}
+
+
+GameState fill_middle_game_hands(vector<card_t>& player_hand, int player, int trump, GameInformation& gi) {
+  array<bool, 32> cards_remaining= gi.cards_remaining;
+  for(const card_t card: player_hand)
+    cards_remaining[card] = false;
+  while (true) {
+    vector<card_t> deck;
+    for(card_t card = 0; card < 32; card++)
+      if (cards_remaining[card])
+	deck.push_back(card);
+    shuffle_deck(deck);
+    array<vector<card_t>, 4> hands;
+    for (const card_t card: player_hand)
+      hands[player].push_back(card);
+    int player_to_deal = player + 1;
+    while (deck.size() != 0) {
+      hands[player_to_deal % 4].push_back(deck.back());
+      deck.pop_back();
+      player_to_deal++;
+      if (player_to_deal % 4 == player)
+	player_to_deal++;
+    }
+    if (gi.hands_are_allowed(hands))
+      return GameState(hands, trump, gi);
+  }
 }

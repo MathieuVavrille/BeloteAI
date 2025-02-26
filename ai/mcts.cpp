@@ -7,10 +7,6 @@
 #include <cmath>
 #include <vector>
 
-#include <godot_cpp/core/class_db.hpp>
-
-using namespace godot;
-
 using node_t = int;
 
 node_t current_node_alloc_id = 0;

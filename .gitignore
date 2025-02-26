@@ -1,7 +1,8 @@
 .godot/
 *.import
-cpp/a.out
+ai/main.out
 ai/*.os
+ai/*.o
 ai/bin/*.so
 godot-cpp/
 .sconsign.dblite

@@ -34,5 +34,6 @@ struct GameState {
 };
 
 GameState fill_opponent_hands(vector<card_t>& hand, int trump, GameInformation& gi);
+GameState fill_middle_game_hands(vector<card_t>& hand, int player, int trump, GameInformation& gi);
 
 #endif
