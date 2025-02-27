@@ -21,7 +21,7 @@ int main() {
   hand.push_back(get_card(2, 0));
   hand.push_back(get_card(2, 4));
   cout_hand(hand);
-  cout << "TRUMP: " << SUIT_NAMES[0] << endl;
+  cout << "TRUMP: " << SUIT_NAMES[1] << endl;
   GameInformation gi;
   gi.record_play(get_card(0, 4));
   gi.record_play(get_card(1, 1));
@@ -30,15 +30,12 @@ int main() {
   gi.record_play(get_card(0, 6));
   gi.record_play(get_card(0, 5));
   gi.print_information();
-  /*gi.cards_remaining[get_card(0, 4)] = false,
-  gi.cards_remaining[get_card(1, 4)] = false,
-  gi.cards_remaining[get_card(2, 4)] = false,
-  gi.cards_remaining[get_card(3, 4)] = false,*/
-  gi.player_has_suit[0][0] = false;
-  gi.player_has_suit[2][1] = false;
-  gi.player_has_suit[3][2] = false;
-  GameState gs = fill_middle_game_hands(hand, 1, 0, gi);
-  gs.display_hands();
+  vector<card_t> trick;
+  trick.push_back(get_card(0, 6));
+  trick.push_back(get_card(0, 5));
+  GameState gs = fill_middle_game_hands(hand, 0, 0, gi);
+  gs.setup_trick(trick);
+  gs.print();
   //GameInformation my_gi = gi.extend_my_hand(hand, 0);
   //my_gi.print_information();
   /*for (card_t card: hand) gi.record_play(card);

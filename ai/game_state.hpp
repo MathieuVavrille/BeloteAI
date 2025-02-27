@@ -21,6 +21,8 @@ struct GameState {
   bool is_attacking = true;
   
   GameState(const std::array<std::vector<card_t>, 4>& set_hands, int new_trump, GameInformation new_gi);
+
+  void setup_trick(std::vector<card_t> new_trick);
   
   int play_random_game();
 
@@ -30,7 +32,7 @@ struct GameState {
 
   void remove_card(int player, card_t card);
   
-  void display_hands() const;
+  void print() const;
 };
 
 GameState fill_opponent_hands(vector<card_t>& hand, int trump, GameInformation& gi);

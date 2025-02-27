@@ -107,3 +107,6 @@ static func generate_order(trump):
 func set_label(value: int):
 	$Label.visible = true
 	$Label.text = str(value)
+
+func to_cpp():
+	return 7 if rank == 1 else (rank - 7)

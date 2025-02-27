@@ -16,6 +16,7 @@ var cards = []
 var best_card_id = null
 var trump = Card.Suit.SPADES
 var hands = []
+var ai_util = AiUtil.new()
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -31,7 +32,7 @@ func start_trick():
 	$Placeholder.rotation = start_direction * PI/2
 	$Placeholder.position = Vector2(cos($Placeholder.rotation + PI/2), sin($Placeholder.rotation + PI/2)) * RADIUS
 	hands[start_direction].activate_all_cards()
-	if start_direction != 10:
+	if start_direction != 0:
 		get_tree().create_timer(PLAY_RANDOM_TIMER).timeout.connect(hands[start_direction].play_random)
 
 
@@ -56,8 +57,8 @@ func add_card(card):
 		var opponent_wins = len(cards) - 2 != best_card_id
 		if len(hands[(len(cards) + start_direction)%4].cards) != 1:
 			hands[(len(cards) + start_direction)%4].activate_possible_cards(cards[0].suit, opponent_wins, null if cards[best_card_id].suit != trump else Card.TRUMP_VALUES[cards[best_card_id].rank])
-			if (len(cards) + start_direction)%4 != -1:
-				get_tree().create_timer(PLAY_RANDOM_TIMER).timeout.connect(hands[(len(cards) + start_direction)%4].play_random)
+			if (len(cards) + start_direction)%4 != 0:
+				hands[(len(cards) + start_direction)%4].play_ai(ai_util, cards)  # get_tree().create_timer(PLAY_RANDOM_TIMER).timeout.connect(hands[(len(cards) + start_direction)%4].play_random)
 		else:
 			hands[(len(cards) + start_direction)%4].activate_all_cards()
 			get_tree().create_timer(PLAY_RANDOM_TIMER).timeout.connect(hands[(len(cards) + start_direction)%4].play_random)

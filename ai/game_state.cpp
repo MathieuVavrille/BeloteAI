@@ -20,6 +20,21 @@ GameState::GameState(const array<vector<card_t>, 4>& set_hands, int new_trump, G
   start_player = 0; // Set starting player
   gi = new_gi;
 }
+
+void GameState::setup_trick(vector<card_t> new_trick) {
+  start_player = (4-new_trick.size()) % 4;
+  trick.clear();
+  best_card_id = 0;
+  for (card_t card: new_trick) {
+    trick.push_back(card);
+    gi.record_play(card);
+    if (csuit(trick[0]) != csuit(card))
+      gi.player_has_suit[(start_player + trick.size() - 1) % 4][csuit(trick[0])] = false;
+    if (card_lt(trick[best_card_id], card, trump)) {
+      best_card_id = trick.size() - 1;
+    }
+  }
+}
   
 // Play a trick until all cards are played
 int GameState::play_random_game() {
@@ -81,7 +96,7 @@ bool GameState::play_card(card_t card) { // returns true if it was the last card
 }
   
 // Display hands
-void GameState::display_hands() const {
+void GameState::print() const {
   for (int i = 0; i < 4; ++i) {
     cout << "Player " << i << "'s hand:";
     for (const auto& card : hands[i]) {
@@ -89,6 +104,12 @@ void GameState::display_hands() const {
     }
     cout << endl;
   }
+  cout << "Current trick: ";
+  for (card_t card: trick) {
+    cout << card_to_string(card) << " ";
+  }
+  cout << endl;
+  cout << "start player " << start_player << endl;
 }
 
 

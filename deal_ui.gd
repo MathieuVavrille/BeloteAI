@@ -50,10 +50,6 @@ func start_round():
 	$Deck.add_child(trick)
 
 func _on_trick_finished(last_trick: int):
-	for hand in all_hands:
-		print("----------")
-		for card in hand.cards_won:
-			print(str(card.suit == hand.trump) + " " + str(card.rank))
 	var team_points = $Bottom/Hand.points_won + $Top/Hand.points_won + (10 if last_trick else 0)
 	var opponents_points = $Left/Hand.points_won + $Right/Hand.points_won + (10 if not last_trick else 0)
 	$Label.text = str(team_points) + " - " + str(opponents_points) + "\n You " + ("Won" if team_points > opponents_points else "Lost") + "!"
@@ -64,5 +60,3 @@ func _on_trick_finished(last_trick: int):
 			get_tree().create_timer(card_cpt * Hand.CARD_MOVEMENT_DURATION / 2).timeout.connect(
 				func(): $Deck/Deck.add_card(card))
 			card_cpt += 1
-	print(card_cpt)
-	
