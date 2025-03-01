@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -Wall -std=c++17
+CXXFLAGS = -Wall -std=c++17 -g
 
 SRCS = main.cpp card.cpp game_information.cpp game_state.cpp mcts.cpp utils.cpp
 OBJS = $(SRCS:.cpp=.o)
