@@ -10,6 +10,9 @@
 
 #include <vector>
 
+using namespace std;
+
+
 using node_t = int;
 
 #define ALLOC_SIZE 1000000
@@ -27,7 +30,7 @@ struct Node {
   
   float upper_bound(float total_nb_tests, float factor);
   
-  node_t get_node_to_play(std::vector<card_t> cards, bool is_opponent);
+  node_t get_node_to_play(vector<card_t> cards, bool is_opponent);
   
   node_t best_node_to_play() const;
   

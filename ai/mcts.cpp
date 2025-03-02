@@ -68,7 +68,7 @@ float Node::rollout(GameState& state) {
   
 float Node::mcts(GameState& state) {
   vector<card_t> possible_cards = state.get_playable_cards(); // Optimize to automatically play the last trick
-  card_t card_to_play = get_node_to_play(possible_cards, (state.start_player + state.trick.size()) % 2 == 1);
+  card_t card_to_play = get_node_to_play(possible_cards, (state.trick_first_player + state.trick.size()) % 2 == 1);
   node_t next_node_id = card_played[card_to_play];
   bool is_finished = state.play_card(card_to_play);
   int res;

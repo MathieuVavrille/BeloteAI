@@ -9,32 +9,23 @@
 
 using namespace std;
 
+GameState random_hands() {
+  vector<card_t> deck;
+  for(card_t card = 0; card < 32; card++)
+    deck.push_back(card);
+  shuffle_deck(deck);
+  array<vector<card_t>, 4> hands;
+  for (int i = 0; i < 32; i++) {
+    hands[i % 4].push_back(deck[i]);
+  }
+  GameInformation gi;
+  return GameState(hands, 1, gi);  // TODO hardcoded trump
+}
+
+
 // Main function to test
 int main() {
-  vector<card_t> hand;
-  hand.push_back(get_card(0, 0));
-  hand.push_back(get_card(0, 2));
-  //hand.push_back(get_card(0, 4));
-  hand.push_back(get_card(0, 7));
-  hand.push_back(get_card(1, 3));
-  hand.push_back(get_card(1, 4));
-  hand.push_back(get_card(2, 0));
-  hand.push_back(get_card(2, 4));
-  cout_hand(hand);
-  cout << "TRUMP: " << SUIT_NAMES[1] << endl;
-  GameInformation gi;
-  gi.record_play(get_card(0, 4));
-  gi.record_play(get_card(1, 1));
-  gi.record_play(get_card(2, 1));
-  gi.record_play(get_card(3, 1));
-  gi.record_play(get_card(0, 6));
-  gi.record_play(get_card(0, 5));
-  gi.print_information();
-  vector<card_t> trick;
-  trick.push_back(get_card(0, 6));
-  trick.push_back(get_card(0, 5));
-  GameState gs = fill_middle_game_hands(hand, 0, 0, gi);
-  gs.setup_trick(trick);
+  GameState gs = random_hands();
   gs.print();
   //GameInformation my_gi = gi.extend_my_hand(hand, 0);
   //my_gi.print_information();

@@ -95,6 +95,7 @@ int GameState::play_random_game() {
   
 // Display hands
 void GameState::print() const {
+  cout << "Trump: " << SUIT_NAMES[trump] << endl;
   for (int i = 0; i < 4; ++i) {
     cout << "Player " << i << "'s hand:";
     for (const auto& card : hands[i]) {

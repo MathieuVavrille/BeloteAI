@@ -11,25 +11,19 @@
 struct GameState {
   GameInformation gi;
   bool even_team_attacking = true;
-  int trump; // Trump suit for the game
+  int trump = 0; // Trump suit for the game
   int team_points[2] = {0, 0}; // Points for each team
   std::array<std::vector<card_t>, 4> hands; // Each player has a hand of cards
   std::vector<card_t> trick; // Current trick being played
-  int trick_first_player; // Index of the current player (0-3)
+  int trick_first_player = 0; // Index of the current player (0-3)
   int best_card_id = 0;
   
   GameState(const std::array<std::vector<card_t>, 4>& set_hands, int new_trump, GameInformation new_gi);
-
   void setup_trick(std::vector<card_t> new_trick);
-  
   std::vector<card_t> get_playable_cards();
-  
   bool play_card(card_t card);
-
   void remove_card(int player, card_t card);
-  
   int play_random_game();
-  
   void print() const;
 };
 
