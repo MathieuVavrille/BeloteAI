@@ -27,6 +27,13 @@ GameState random_hands() {
 int main() {
   GameState gs = random_hands();
   gs.print();
+  vector<card_t> possible_hand = get_playable_cards(); // TODO optimize
+  card_t random_card = possible_hand[random_randint(possible_hand.size())];
+  while (!play_card(random_card)) {
+    possible_hand = get_playable_cards();
+    random_card = possible_hand[random_randint(possible_hand.size())];
+  }
+  return team_points[0] - team_points[1];
   //GameInformation my_gi = gi.extend_my_hand(hand, 0);
   //my_gi.print_information();
   /*for (card_t card: hand) gi.record_play(card);

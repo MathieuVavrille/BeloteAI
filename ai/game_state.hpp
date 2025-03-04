@@ -19,6 +19,7 @@ struct GameState {
   int best_card_id = 0;
   
   GameState(const std::array<std::vector<card_t>, 4>& set_hands, int new_trump, GameInformation new_gi);
+  GameState random_opponent_hands();
   void setup_trick(std::vector<card_t> new_trick);
   std::vector<card_t> get_playable_cards();
   bool play_card(card_t card);

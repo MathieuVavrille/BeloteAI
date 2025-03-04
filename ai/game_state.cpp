@@ -18,6 +18,26 @@ GameState::GameState(const array<vector<card_t>, 4>& new_hands, int new_trump, G
   gi = new_gi;
 }
 
+GameState GameState::random_opponent_hands() {
+  int current_player = (trick_first_player + trick.size() - 1) % 4;
+  array<vector<card_t>, 4> new_hands;
+  new_hands[current_player] = hands[current_player];
+  vector<card_t> deck;
+  for (int i = current_player + 1; i < current_player + 4; i++)
+    for (card_t card: hands[i])
+      deck.push_back(card);
+  int player_to_deal = current_player + 1;
+  while (deck.size() != 0) {
+    shuffle_deck(deck);
+    hands[player_to_deal % 4].push_back(deck[i]);
+    player_to_deal++;
+    if (player_to_deal % 4 == current_player)
+      player_to_deal++;
+  }
+  GameInformation new_gi = gi.copy();
+  return GameState(new_hands, trump, new_gi);
+}
+
 void GameState::setup_trick(vector<card_t> new_trick) {
   trick_first_player = (4-new_trick.size()) % 4;
   trick.clear();
