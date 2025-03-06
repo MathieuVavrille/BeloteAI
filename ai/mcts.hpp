@@ -25,18 +25,14 @@ struct Node {
   std::array<node_t, 32> card_played;
 
   void init();
-  
+  bool is_opponent() const;
   float average();
-  
   float upper_bound(float total_nb_tests, float factor);
-  
   node_t get_node_to_play(vector<card_t> cards, bool is_opponent);
-  
-  node_t best_node_to_play() const;
-  
+  card_t best_card_to_play(bool is_opponent) const;
   float rollout(GameState& state);
-  
   float mcts(GameState& state);
+  void print_scores(std::string indent) const;
 };
 
 Node& get_node(node_t node_index);

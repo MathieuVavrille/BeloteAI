@@ -2,10 +2,17 @@
 #include "card.hpp"
 #include "game_information.hpp"
 #include "game_state.hpp"
+#include "mcts.hpp"
+#include "utils.hpp"
 
 #include <array>
+#include <chrono>
 #include <iostream>
 #include <vector>
+
+chrono::high_resolution_clock::time_point start;
+#define MARKTIME start = chrono::high_resolution_clock::now();
+#define TIME chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now() - start).count()
 
 using namespace std;
 
@@ -23,27 +30,34 @@ GameState random_hands() {
 }
 
 
+card_t run_mcts(const GameState& gs, int max_milliseconds) {
+  MARKTIME;
+  vector<card_t> possible_cards = gs.get_playable_cards(); // Optimize to automatically play the last trick
+  if (possible_cards.size() == 1)
+    return possible_cards.back();
+  get_node(0).init();
+  current_node_alloc_id = 1;
+  while (current_node_alloc_id < ALLOC_SIZE - 10 && TIME < max_milliseconds) {
+    GameState working_gs = gs.random_opponent_hands();
+    //working_gs.print();
+    get_node(0).mcts(working_gs);
+  }
+  return get_node(0).best_card_to_play(gs.is_opponent());
+}
+
+
 // Main function to test
 int main() {
   GameState gs = random_hands();
-  gs.print();
-  vector<card_t> possible_hand = get_playable_cards(); // TODO optimize
-  card_t random_card = possible_hand[random_randint(possible_hand.size())];
-  while (!play_card(random_card)) {
-    possible_hand = get_playable_cards();
-    random_card = possible_hand[random_randint(possible_hand.size())];
-  }
-  return team_points[0] - team_points[1];
-  //GameInformation my_gi = gi.extend_my_hand(hand, 0);
-  //my_gi.print_information();
-  /*for (card_t card: hand) gi.record_play(card);
-  Node& node = get_node(current_node_alloc_id++);
-  node.init();
-  for(int i = 0; i < 20000; i++) {
-    GameInformation gi;
-    GameState gs = random_opponent_hands(hand, 0, gi);
-    node.mcts(gs);
-  }
-  node.print_scores("");*/
+  int i = 0;
+  card_t card;
+  do {
+    cout << "here " << i++ << endl;
+    gs.print();
+    card = run_mcts(gs, 1000);
+    get_node(0).print_scores("  ");
+    cout << card_to_string(card) << endl;
+    } while (!gs.play_card(card));
+  cout << gs.team_points[0] << " " << gs.team_points[1] << endl;;
   return 0;
 }

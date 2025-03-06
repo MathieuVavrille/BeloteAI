@@ -6,7 +6,7 @@
 #include "utils.hpp"
 
 #include <array>
-// #include <iostream>
+#include <iostream>
 #include <vector>
 
 using namespace std;
@@ -18,24 +18,35 @@ GameState::GameState(const array<vector<card_t>, 4>& new_hands, int new_trump, G
   gi = new_gi;
 }
 
-GameState GameState::random_opponent_hands() {
-  int current_player = (trick_first_player + trick.size() - 1) % 4;
+GameState GameState::random_opponent_hands() const {
+  int current_player = (trick_first_player + trick.size()) % 4;
   array<vector<card_t>, 4> new_hands;
   new_hands[current_player] = hands[current_player];
   vector<card_t> deck;
   for (int i = current_player + 1; i < current_player + 4; i++)
-    for (card_t card: hands[i])
+    for (card_t card: hands[i % 4])
       deck.push_back(card);
   int player_to_deal = current_player + 1;
   while (deck.size() != 0) {
     shuffle_deck(deck);
-    hands[player_to_deal % 4].push_back(deck[i]);
+    new_hands[player_to_deal % 4].push_back(deck.back());
+    deck.pop_back();
     player_to_deal++;
     if (player_to_deal % 4 == current_player)
       player_to_deal++;
   }
   GameInformation new_gi = gi.copy();
-  return GameState(new_hands, trump, new_gi);
+  GameState ng = GameState(new_hands, trump, new_gi);
+  ng.trick = trick;
+  ng.team_points[0] = team_points[0];
+  ng.team_points[1] = team_points[1];
+  ng.trick_first_player = trick_first_player;
+  ng.even_team_attacking = even_team_attacking;
+  return ng;
+}
+
+bool GameState::is_opponent() const {
+  return (trick_first_player + trick.size()) % 2 == 1;
 }
 
 void GameState::setup_trick(vector<card_t> new_trick) {
@@ -53,7 +64,7 @@ void GameState::setup_trick(vector<card_t> new_trick) {
   }
 }
 
-vector<card_t> GameState::get_playable_cards() {
+vector<card_t> GameState::get_playable_cards() const {
   if (trick.size() == 0) {
     return hands[trick_first_player];
   }
@@ -87,8 +98,10 @@ bool GameState::play_card(card_t card) { // returns true if it was the last card
     // Compute the points
     int trickPoints = 0;
     for (const card_t card : trick) {
+      //cout << card_to_string(card) << " ";
       trickPoints += get_card_points(card, trump);
     }
+    //cout << endl;
     int winning_player = (trick_first_player + best_card_id) % 4;
     team_points[winning_player % 2] += trickPoints;
     trick_first_player = winning_player;
@@ -96,6 +109,7 @@ bool GameState::play_card(card_t card) { // returns true if it was the last card
       team_points[trick_first_player % 2] += 10;
       return true;
     }
+    //cout << "Winner is " << trick_first_player << endl;
     trick.clear();
     best_card_id = 0;
   }
