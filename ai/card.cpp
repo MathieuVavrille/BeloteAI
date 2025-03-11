@@ -92,7 +92,7 @@ vector<card_t> get_allowed_cards(vector<card_t> cards, int selected_suit, bool o
 // Function to shuffle the deck
 void shuffle_deck(vector<card_t>& deck) {
   for (int i = deck.size() - 1; i > 0; i--) {
-    int to_swap = random_randint(i);
+    int to_swap = random_randint(i+1);
     swap(deck[to_swap], deck[i]);
   }
 }

@@ -14,7 +14,10 @@ node_t current_node_alloc_id = 0;
 void Node::init() {
   nb_wins = 0.0;
   nb_tests = 0.0;
-  card_played.fill(-1);
+  nb_seen = 0;
+  for (int i = 0; i < 32; i++)
+    card_played[i] = -1;
+    //card_played.fill(-1);
 }
   
 float Node::average() {
@@ -26,6 +29,9 @@ float Node::upper_bound(float total_nb_tests, float factor) {
 }
   
 node_t Node::get_node_to_play(vector<card_t> cards, bool is_opponent) {
+  for (card_t card: cards)
+    if (card_played[card] != -1)
+      get_node(card_played[card]).nb_seen++;
   float factor = (is_opponent) ? -1.f : 1.f;
   node_t best_card = -1;
   float best_score = -1000.f;
@@ -97,10 +103,13 @@ float Node::mcts(GameState& state) {
 }
 
 void Node::print_scores(string indent) const {
+  if (indent.length() > 2)
+    return;
   for (int i = 0; i < 32; i++) {
     if (card_played[i] != -1) {
       Node& next_node = get_node(card_played[i]);
-      cout << indent << card_to_string(i) << ":  " << (int) next_node.average() << "  " << next_node.nb_tests << endl;
+      cout << indent << card_to_string(i) << ":  " << ((int) next_node.average() + 162) / 2 << "-" << (162 - (int) next_node.average()) / 2 << "  " << next_node.nb_tests << " " << next_node.nb_seen << endl;
+      next_node.print_scores(indent + "  ");
       //if (next_node.nb_tests > 100) next_node.print_scores(indent + " | ");
     }
   }

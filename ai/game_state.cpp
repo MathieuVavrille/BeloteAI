@@ -27,8 +27,8 @@ GameState GameState::random_opponent_hands() const {
     for (card_t card: hands[i % 4])
       deck.push_back(card);
   int player_to_deal = current_player + 1;
+  shuffle_deck(deck);
   while (deck.size() != 0) {
-    shuffle_deck(deck);
     new_hands[player_to_deal % 4].push_back(deck.back());
     deck.pop_back();
     player_to_deal++;
@@ -143,6 +143,7 @@ void GameState::print() const {
   }
   cout << endl;
   cout << "start player " << trick_first_player << endl;
+  cout << "Scores: " << team_points[0] << " - " << team_points[1] << endl;
 }
 
 

@@ -22,6 +22,7 @@ extern node_t current_node_alloc_id;
 struct Node {
   float nb_wins = 0.0;
   float nb_tests = 0.0;
+  float nb_seen = 0.0;
   std::array<node_t, 32> card_played;
 
   void init();

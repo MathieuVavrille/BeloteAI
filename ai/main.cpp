@@ -37,11 +37,13 @@ card_t run_mcts(const GameState& gs, int max_milliseconds) {
     return possible_cards.back();
   get_node(0).init();
   current_node_alloc_id = 1;
-  while (current_node_alloc_id < ALLOC_SIZE - 10 && TIME < max_milliseconds) {
+  int cpt = 0;
+  while (cpt < 10000) { // && current_node_alloc_id < ALLOC_SIZE - 10 && TIME < max_milliseconds) {
     GameState working_gs = gs.random_opponent_hands();
-    //working_gs.print();
     get_node(0).mcts(working_gs);
+    cpt++;
   }
+  get_node(0).print_scores("");
   return get_node(0).best_card_to_play(gs.is_opponent());
 }
 
@@ -55,7 +57,6 @@ int main() {
     cout << "here " << i++ << endl;
     gs.print();
     card = run_mcts(gs, 1000);
-    get_node(0).print_scores("  ");
     cout << card_to_string(card) << endl;
     } while (!gs.play_card(card));
   cout << gs.team_points[0] << " " << gs.team_points[1] << endl;;
