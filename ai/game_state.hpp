@@ -17,7 +17,8 @@ struct GameState {
   std::vector<card_t> trick; // Current trick being played
   int trick_first_player = 0; // Index of the current player (0-3)
   int best_card_id = 0;
-  
+
+  GameState();
   GameState(const std::array<std::vector<card_t>, 4>& set_hands, int new_trump, GameInformation new_gi);
   GameState random_opponent_hands() const;
   bool is_opponent() const;

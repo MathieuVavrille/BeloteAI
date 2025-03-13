@@ -4,13 +4,9 @@
 #include "card.hpp"
 #include "game_state.hpp"
 #include "mcts.hpp"
+#include "utils.hpp"
 
-#include <chrono>
 #include <godot_cpp/core/class_db.hpp>
-
-chrono::high_resolution_clock::time_point start;
-#define MARKTIME start = chrono::high_resolution_clock::now();
-#define TIME chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now() - start).count()
 
 using namespace godot;
 

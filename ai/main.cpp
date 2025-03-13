@@ -6,13 +6,8 @@
 #include "utils.hpp"
 
 #include <array>
-#include <chrono>
 #include <iostream>
 #include <vector>
-
-chrono::high_resolution_clock::time_point start;
-#define MARKTIME start = chrono::high_resolution_clock::now();
-#define TIME chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now() - start).count()
 
 using namespace std;
 

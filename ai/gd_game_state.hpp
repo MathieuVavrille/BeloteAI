@@ -1,6 +1,6 @@
 
-#ifndef AIUTIL_H
-#define AIUTIL_H
+#ifndef GDGAMESTATE_H
+#define GDGAMESTATE_H
 
 #include "card.hpp"
 #include "game_state.hpp"
@@ -8,10 +8,10 @@
 
 #include <godot_cpp/classes/ref.hpp>
 
-using namespace godot;
+card_t card_from_godot(int gd_card_suit, int gd_card_rank);
 
-class GdGameState : public RefCounted {
-  GDCLASS(AiUtil, RefCounted);
+class GdGameState : public godot::RefCounted {
+  GDCLASS(GdGameState, godot::RefCounted);
   
   GameState gs;
   
@@ -19,21 +19,10 @@ protected:
   static void _bind_methods();
   
 public:
-
-  GameState random_opponent_hands() const;
-  void init();
-  void init_for_trumps();
-  void clear();
-  void record_card(int suit, int rank);
-  void record_trick(int suit, int rank);
-  void set_state(int new_trump, int new_my_points, int new_opponent_points, bool new_is_attacking);
-  void add_card(int suit, int rank);
-  void run_mcts(int max_milliseconds, int trump);
-  void run_trump_mcts(int max_milliseconds);
-  void print_results();
-  float get_card_average_score(int suit, int rank);
-  float get_trump_average_score(int trump);
-  
+  GdGameState(int trump);
+  void add_card_to_player(int player, int gd_card_suit, int gd_card_rank);
+  bool play_card(int gd_card_suit, int gd_card_rank);
+  void print() const;
 };
 
 #endif

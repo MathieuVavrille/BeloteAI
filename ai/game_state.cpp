@@ -12,7 +12,9 @@
 using namespace std;
 
 // Initialize game state
-GameState::GameState(const array<vector<card_t>, 4>& new_hands, int new_trump, GameInformation new_gi) { // Modified GameState constructor
+GameState::GameState() {}
+
+GameState::GameState(const array<vector<card_t>, 4>& new_hands, int new_trump, GameInformation new_gi) {
   hands = new_hands;
   trump = new_trump;
   gi = new_gi;
