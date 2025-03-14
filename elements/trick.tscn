@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://cuvgfj56j24mb"]
 
-[ext_resource type="Script" path="res://elements/trick.gd" id="1_ukngm"]
+[ext_resource type="Script" uid="uid://dw051q568ii0b" path="res://elements/trick.gd" id="1_ukngm"]
 [ext_resource type="Texture2D" uid="uid://crjmbcicyorp2" path="res://assets/card_placeholder.png" id="2_4hvcy"]
 
 [node name="Trick" type="Node2D"]

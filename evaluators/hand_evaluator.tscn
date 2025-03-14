@@ -1,7 +1,7 @@
 [gd_scene load_steps=8 format=3 uid="uid://c0ytts88fe33s"]
 
 [ext_resource type="PackedScene" uid="uid://2cnhuc7bnxhh" path="res://evaluators/simple_hand.tscn" id="1_qcspd"]
-[ext_resource type="Script" path="res://evaluators/hand_evaluator.gd" id="1_rd8sr"]
+[ext_resource type="Script" uid="uid://c8ein2ddkrqg6" path="res://evaluators/hand_evaluator.gd" id="1_rd8sr"]
 [ext_resource type="PackedScene" uid="uid://jnpwcm0tmiru" path="res://evaluators/card_picker.tscn" id="2_6djh3"]
 [ext_resource type="Texture2D" uid="uid://blhim0scoeyeq" path="res://assets/suits/diamonds.png" id="4_2nksk"]
 [ext_resource type="Texture2D" uid="uid://dfkruqng1gr3v" path="res://assets/suits/clubs.png" id="5_sduol"]
@@ -180,7 +180,3 @@ theme_override_font_sizes/font_size = 250
 text = "162"
 
 [connection signal="pressed" from="Run" to="." method="_on_run_pressed"]
-[connection signal="pressed" from="Diamonds" to="." method="set_trump" binds= [0]]
-[connection signal="pressed" from="Clubs" to="." method="set_trump" binds= [1]]
-[connection signal="pressed" from="Hearts" to="." method="set_trump" binds= [2]]
-[connection signal="pressed" from="Spades" to="." method="set_trump" binds= [3]]

@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://df6jybxppk4m1"]
 
-[ext_resource type="Script" path="res://ui/trump_background.gd" id="1_7d5xn"]
+[ext_resource type="Script" uid="uid://ccwvfbjb00fuq" path="res://ui/trump_background.gd" id="1_7d5xn"]
 [ext_resource type="Texture2D" uid="uid://dfkruqng1gr3v" path="res://assets/suits/clubs.png" id="1_cjjpk"]
 
 [node name="TrumpBackground" type="Node2D"]
