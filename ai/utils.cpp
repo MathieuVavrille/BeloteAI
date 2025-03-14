@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+std::chrono::high_resolution_clock::time_point start;
+
 uint32_t g_seed = 12345;
 
 int next_seed() {
