@@ -51,7 +51,7 @@ bool GameState::is_opponent() const {
   return (trick_first_player + trick.size()) % 2 == 1;
 }
 
-void GameState::setup_trick(vector<card_t> new_trick) {
+/*void GameState::setup_trick(vector<card_t> new_trick) {
   trick_first_player = (4-new_trick.size()) % 4;
   trick.clear();
   best_card_id = 0;
@@ -64,7 +64,7 @@ void GameState::setup_trick(vector<card_t> new_trick) {
       best_card_id = trick.size() - 1;
     }
   }
-}
+  }*/
 
 vector<card_t> GameState::get_playable_cards() const {
   if (trick.size() == 0) {

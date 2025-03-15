@@ -17,12 +17,18 @@ var best_card_id = null
 var trump = Card.Suit.SPADES
 var hands = []
 var ai_util = AiUtil.new()
+var game_state: GdGameState
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	trump = hands[0].trump
+	game_state = GdGameState.new()
+	game_state.set_trump(trump)
 	for hand in hands:
 		hand.play_card.connect(add_card)
+	for player in range(4):
+		for card in hands[player].cards:
+			game_state.add_card_to_player(player, card.suit, card.rank)
 	start_trick()
 
 func start_trick():
@@ -46,8 +52,10 @@ func move_placeholder():
 
 
 func add_card(card):
+	print("card played")
 	ChildExchange.exchange(card, self)
 	cards.append(card)
+	game_state.play_card(card.suit, card.rank)
 	if best_card_id == null or compare_cards(cards[best_card_id], card, cards[0].suit):
 		best_card_id = len(cards) - 1
 	cards.back().tween_position($Placeholder.position, fmod($Placeholder.rotation, 2 * PI) + deg_to_rad(randi()%THROW_RANDOMNESS - THROW_RANDOMNESS / 2.), .5)
