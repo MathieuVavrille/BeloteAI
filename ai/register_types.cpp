@@ -1,7 +1,6 @@
 #include "register_types.hpp"
 
 #include "ai_util.hpp"
-#include "gd_game_state.hpp"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -15,7 +14,6 @@ void initialize_ai_module(ModuleInitializationLevel p_level) {
 	}
 
 	GDREGISTER_CLASS(AiUtil);
-	GDREGISTER_CLASS(GdGameState);
 }
 
 void uninitialize_ai_module(ModuleInitializationLevel p_level) {

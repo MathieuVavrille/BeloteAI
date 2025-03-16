@@ -4,9 +4,7 @@
 
 #include "card.hpp"
 #include "mcts.hpp"
-#include "game_information.hpp"
 #include "game_state.hpp"
-#include "gd_game_state.hpp"
 
 #include <godot_cpp/classes/ref.hpp>
 

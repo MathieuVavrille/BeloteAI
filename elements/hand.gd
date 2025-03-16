@@ -141,14 +141,6 @@ var ai_util: AiUtil
 func play_ai(nai_util, trick):
 	ai_util = nai_util
 	ai_util.init()
-	ai_util.clear()
-	for card in trick:
-		var cpp_rank = 7 if card.rank == 1 else (card.rank - 7)
-		ai_util.record_trick(card.suit, cpp_rank)
-	ai_util.set_state(trump, 0, 0, true)
-	for card in cards:
-		var cpp_rank = 7 if card.rank == 1 else (card.rank - 7)
-		ai_util.add_card(card.suit, cpp_rank)
 	is_running = true
 
 
@@ -156,7 +148,7 @@ var is_running = false
 var run_count = 0
 func _process(delta: float) -> void:
 	if is_running and run_count < 100:
-		ai_util.run_mcts(10, trump)
+		ai_util.run_mcts(10)
 		run_count += 1
 	if run_count == 100:
 		is_running = false

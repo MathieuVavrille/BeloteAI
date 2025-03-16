@@ -15,16 +15,16 @@ card_t card_from_godot(int gd_card_suit, int gd_card_rank) {
   return get_card(gd_card_suit, gd_card_rank);
 }
 
-void GdGameState::set_trump(int trump) {
+void AiUtil::set_trump(int trump) {
   gs.trump = trump;
 }
 
-void GdGameState::add_card_to_player(int player, int gd_card_suit, int gd_card_rank) {
+void AiUtil::add_card_to_player(int player, int gd_card_suit, int gd_card_rank) {
   card_t card = card_from_godot(gd_card_suit, gd_card_rank);
   gs.hands[player].push_back(card);
 }
 
-bool GdGameState::play_card(int gd_card_suit, int gd_card_rank) {
+bool AiUtil::play_card(int gd_card_suit, int gd_card_rank) {
   card_t card = card_from_godot(gd_card_suit, gd_card_rank);
   return gs.play_card(card);
 }
